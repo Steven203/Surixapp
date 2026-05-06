@@ -1,0 +1,68 @@
+# ===============================
+# SISTEMA
+# ===============================
+.DS_Store
+Thumbs.db
+
+# ===============================
+# VARIABLES DE ENTORNO
+# ===============================
+.env
+.env.*
+*.env
+
+# ===============================
+# SPRING BOOT
+# ===============================
+target/
+*.log
+*.class
+
+# Maven wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# ===============================
+# NODE (React + backend-node)
+# ===============================
+node_modules/
+dist/
+build/
+coverage/
+npm-debug.log*
+yarn-error.log*
+
+# ===============================
+# IDEs
+# ===============================
+
+# IntelliJ
+.idea/
+*.iml
+
+# Eclipse / STS
+.project
+.classpath
+.settings/
+.springBeans
+.sts4-cache
+.apt_generated
+.factorypath
+
+# VS Code
+.vscode/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
+
+# ===============================
+# DATABASE / DOCKER
+# ===============================
+postgres-data/
+docker-data/
+
+# OS generated
+*.swp
+*.swo
