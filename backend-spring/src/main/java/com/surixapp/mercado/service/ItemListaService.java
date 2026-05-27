@@ -12,4 +12,6 @@ public interface ItemListaService {
     List<ItemListaResponse> listByLista(Long listaId);
 
     void removeItem(Long itemId);
+
+    ItemListaResponse updateCantidad(Long itemId, Integer cantidad);
 }

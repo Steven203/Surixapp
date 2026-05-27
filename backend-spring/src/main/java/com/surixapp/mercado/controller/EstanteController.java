@@ -34,6 +34,11 @@ public class EstanteController {
         return service.getById(id);
     }
 
+    @PutMapping("/{id}")
+    public EstanteResponse update(@PathVariable Long id, @Valid @RequestBody UpdateEstanteRequest request) {
+        return service.update(id, request);
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {

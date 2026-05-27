@@ -17,7 +17,7 @@ public class ListaCompraController {
     private final ItemListaService itemService;
 
     public ListaCompraController(ListaCompraService listaService,
-                                 ItemListaService itemService) {
+            ItemListaService itemService) {
         this.listaService = listaService;
         this.itemService = itemService;
     }
@@ -39,15 +39,17 @@ public class ListaCompraController {
     }
 
     @PatchMapping("/{id}/finalizar")
-    public ListaCompraResponse finalizar(@PathVariable Long id) {
-        return listaService.finalizar(id);
+    public ListaCompraResponse finalizar(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "false") boolean forzar) {
+        return listaService.finalizar(id, forzar);
     }
 
     // Items dentro de la lista
     @PostMapping("/{listaId}/items")
     @ResponseStatus(HttpStatus.CREATED)
     public ItemListaResponse addItem(@PathVariable Long listaId,
-                                     @Valid @RequestBody CreateItemListaRequest request) {
+            @Valid @RequestBody CreateItemListaRequest request) {
         return itemService.addItem(listaId, request);
     }
 
@@ -65,5 +67,12 @@ public class ListaCompraController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeItem(@PathVariable Long itemId) {
         itemService.removeItem(itemId);
+    }
+
+    @PutMapping("/items/{itemId}")
+    public ItemListaResponse updateCantidad(
+            @PathVariable Long itemId,
+            @Valid @RequestBody UpdateItemCantidadRequest request) {
+        return itemService.updateCantidad(itemId, request.getCantidad());
     }
 }

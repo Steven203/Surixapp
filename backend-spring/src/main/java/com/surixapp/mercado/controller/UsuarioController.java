@@ -34,6 +34,17 @@ public class UsuarioController {
         return service.getById(id);
     }
 
+    @PutMapping("/{id}")
+    public UsuarioResponse update(@PathVariable Long id, @Valid @RequestBody UpdateUsuarioRequest request) {
+        return service.update(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
+    }
+
     @PostMapping("/{usuarioId}/roles/{roleId}")
     public UsuarioResponse assignRole(@PathVariable Long usuarioId,
             @PathVariable Long roleId) {

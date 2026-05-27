@@ -34,6 +34,11 @@ public class ProductoController {
         return service.getById(id);
     }
 
+    @PutMapping("/{id}")
+    public ProductoResponse update(@PathVariable Long id, @Valid @RequestBody UpdateProductoRequest request) {
+        return service.update(id, request);
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {

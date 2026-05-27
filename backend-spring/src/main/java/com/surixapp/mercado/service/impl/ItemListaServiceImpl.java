@@ -19,8 +19,8 @@ public class ItemListaServiceImpl implements ItemListaService {
     private final ProductoRepository productoRepository;
 
     public ItemListaServiceImpl(ItemListaRepository itemRepository,
-                                ListaCompraRepository listaRepository,
-                                ProductoRepository productoRepository) {
+            ListaCompraRepository listaRepository,
+            ProductoRepository productoRepository) {
         this.itemRepository = itemRepository;
         this.listaRepository = listaRepository;
         this.productoRepository = productoRepository;
@@ -76,15 +76,35 @@ public class ItemListaServiceImpl implements ItemListaService {
     }
 
     @Override
+    public ItemListaResponse updateCantidad(Long itemId, Integer cantidad) {
+        ItemLista item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found"));
+
+        if (item.getLista().getEstado() == ListaCompra.Estado.FINALIZADA)
+            throw new BusinessException("No se puede modificar una lista finalizada");
+
+        if (item.getRecogido())
+            throw new BusinessException("No se puede modificar un item ya recogido");
+
+        if (cantidad > item.getProducto().getStock())
+            throw new BusinessException("Stock insuficiente. Disponible: " + item.getProducto().getStock());
+
+        item.setCantidad(cantidad); 
+        return toResponse(itemRepository.save(item));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<ItemListaResponse> listByLista(Long listaId) {
         return itemRepository.findByListaId(listaId)
                 .stream()
                 .sorted((a, b) -> {
                     Integer oa = a.getProducto().getEstante() != null
-                            ? a.getProducto().getEstante().getOrdenLogico() : Integer.MAX_VALUE;
+                            ? a.getProducto().getEstante().getOrdenLogico()
+                            : Integer.MAX_VALUE;
                     Integer ob = b.getProducto().getEstante() != null
-                            ? b.getProducto().getEstante().getOrdenLogico() : Integer.MAX_VALUE;
+                            ? b.getProducto().getEstante().getOrdenLogico()
+                            : Integer.MAX_VALUE;
                     return Integer.compare(oa, ob);
                 })
                 .map(this::toResponse).toList();

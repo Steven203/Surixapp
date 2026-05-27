@@ -46,6 +46,19 @@ public class EstanteServiceImpl implements EstanteService {
     }
 
     @Override
+    public EstanteResponse update(Long id, com.surixapp.mercado.dto.UpdateEstanteRequest request) {
+        Estante existing = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Estante " + id + " not found"));
+
+        existing.setNombre(request.getNombre());
+        existing.setCoordX(request.getCoordX());
+        existing.setCoordY(request.getCoordY());
+        existing.setOrdenLogico(request.getOrdenLogico());
+
+        return toResponse(repository.save(existing));
+    }
+
+    @Override
     public void delete(Long id) {
         if (!repository.existsById(id))
             throw new ResourceNotFoundException("Estante " + id + " not found");
@@ -53,6 +66,7 @@ public class EstanteServiceImpl implements EstanteService {
     }
 
     private EstanteResponse toResponse(Estante e) {
+
         EstanteResponse r = new EstanteResponse();
         r.setId(e.getId());
         r.setNombre(e.getNombre());

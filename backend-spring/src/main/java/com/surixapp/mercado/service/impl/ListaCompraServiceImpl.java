@@ -18,7 +18,7 @@ public class ListaCompraServiceImpl implements ListaCompraService {
     private final UsuarioRepository usuarioRepository;
 
     public ListaCompraServiceImpl(ListaCompraRepository listaRepository,
-                                  UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository) {
         this.listaRepository = listaRepository;
         this.usuarioRepository = usuarioRepository;
     }
@@ -55,12 +55,29 @@ public class ListaCompraServiceImpl implements ListaCompraService {
     }
 
     @Override
-    public ListaCompraResponse finalizar(Long id) {
+    public ListaCompraResponse finalizar(Long id, boolean forzar) {
         ListaCompra lista = listaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lista " + id + " not found"));
 
         if (lista.getEstado() == ListaCompra.Estado.FINALIZADA)
             throw new BusinessException("La lista ya está finalizada");
+
+        List<ItemLista> pendientes = lista.getItems().stream()
+                .filter(item -> !item.getRecogido())
+                .toList();
+
+        if (!pendientes.isEmpty() && !forzar) {
+            // devuelve los nombres de los pendientes para que el frontend los muestre
+            String nombres = pendientes.stream()
+                    .map(i -> i.getProducto().getNombre())
+                    .collect(java.util.stream.Collectors.joining(", "));
+            throw new BusinessException("Tienes items sin recoger: " + nombres);
+        }
+
+        // si forzar=true elimina los pendientes y finaliza
+        if (!pendientes.isEmpty()) {
+            lista.getItems().removeIf(item -> !item.getRecogido());
+        }
 
         lista.setEstado(ListaCompra.Estado.FINALIZADA);
         return toResponse(listaRepository.save(lista));

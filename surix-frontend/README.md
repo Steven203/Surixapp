@@ -1,36 +1,138 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛒 Mercado App — Frontend
 
-## Getting Started
+Aplicación web para clientes y administradores de un supermercado. Permite gestionar listas de compra con ruta sugerida por estantes.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Stack
+
+| Herramienta | Versión | Uso |
+|---|---|---|
+| Next.js | 14+ | Framework principal (App Router) |
+| TypeScript | 5+ | Tipado estático |
+| Tailwind CSS | 3+ | Estilos |
+| shadcn/ui | latest | Componentes UI |
+| Zustand | 4+ | Estado global |
+| SWR | 2+ | Fetching y caché de datos |
+| React Hook Form | 7+ | Manejo de formularios |
+| Zod | 3+ | Validación de esquemas |
+
+---
+
+## Estructura de carpetas
+
+```
+src/
+├── app/                              # App Router de Next.js
+│   ├── (auth)/                       # Rutas públicas
+│   │   └── login/
+│   │       └── page.tsx
+│   ├── (admin)/                      # Rutas protegidas — rol ADMIN
+│   │   ├── layout.tsx                # verifica rol antes de renderizar
+│   │   ├── productos/
+│   │   │   └── page.tsx
+│   │   ├── estantes/
+│   │   │   └── page.tsx
+│   │   ├── categorias/
+│   │   │   └── page.tsx
+│   │   └── usuarios/
+│   │       └── page.tsx
+│   └── (cliente)/                    # Rutas protegidas — rol CLIENTE
+│       ├── layout.tsx
+│       ├── lista/
+│       │   └── page.tsx              # lista activa del cliente
+│       └── lista/[id]/
+│           └── page.tsx              # items con ruta sugerida
+│
+├── components/
+│   ├── ui/                           # componentes genéricos (shadcn/ui)
+│   │   ├── Button.tsx
+│   │   ├── Input.tsx
+│   │   ├── Modal.tsx
+│   │   ├── Badge.tsx
+│   │   └── Table.tsx
+│   ├── productos/
+│   │   ├── ProductoCard.tsx
+│   │   ├── ProductoForm.tsx
+│   │   └── ProductoTable.tsx
+│   ├── estantes/
+│   │   ├── EstanteForm.tsx
+│   │   └── EstanteMap.tsx            # mapa visual del supermercado
+│   ├── lista/
+│   │   ├── ItemLista.tsx             # item con checkbox recogido
+│   │   ├── RutaSugerida.tsx          # items ordenados por orden_logico
+│   │   └── ListaActions.tsx          # botones agregar, finalizar
+│   └── layout/
+│       ├── Navbar.tsx
+│       └── Sidebar.tsx
+│
+├── api/                              # capa de comunicación con el backend
+│   ├── client.ts                     # fetch base con URL y headers
+│   ├── usuarios.ts
+│   ├── roles.ts
+│   ├── productos.ts
+│   ├── estantes.ts
+│   ├── categorias.ts
+│   └── listas.ts
+│
+├── hooks/                            # lógica reutilizable
+│   ├── useAuth.ts
+│   ├── useProductos.ts
+│   ├── useLista.ts
+│   └── useRutaSugerida.ts
+│
+├── store/                            # estado global con Zustand
+│   ├── authStore.ts                  # usuario logueado + rol
+│   └── listaStore.ts                 # lista activa + items
+│
+├── types/                            # tipos TypeScript
+│   ├── usuario.ts
+│   ├── producto.ts
+│   ├── estante.ts
+│   ├── categoria.ts
+│   └── lista.ts
+│
+└── middleware.ts                     # protege rutas según rol
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Convenciones
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Archivos:**
+- Componentes: `PascalCase.tsx` — `ProductoCard.tsx`
+- Hooks: `camelCase.ts` con prefijo `use` — `useLista.ts`
+- Módulos API: `camelCase.ts` — `listas.ts`
+- Tipos: `camelCase.ts` — `lista.ts`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Componentes:**
+- Un componente por archivo
+- Props tipadas con `type` no `interface`
+- Exportación por defecto para páginas, nombrada para componentes
 
-## Learn More
+**API:**
+- Siempre usar los módulos de `api/` — nunca `fetch` directo en componentes
+- Errores siempre capturados con `try/catch`
+- Revalidar con `mutate()` después de mutaciones
 
-To learn more about Next.js, take a look at the following resources:
+**Variables de entorno:**
+```env
+# .env.local
+NEXT_PUBLIC_API_URL=http://localhost:8080
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Cómo correr el proyecto
 
-## Deploy on Vercel
+```bash
+# instalar dependencias
+npm install
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# correr en desarrollo
+npm run dev
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# build producción
+npm run build
+npm start
+```
+
+La app corre en `http://localhost:3000`

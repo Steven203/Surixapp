@@ -29,6 +29,11 @@ public class CategoriaController {
     @GetMapping("/{id}")
     public CategoriaResponse getById(@PathVariable Long id) { return service.getById(id); }
 
+    @PutMapping("/{id}")
+    public CategoriaResponse update(@PathVariable Long id, @Valid @RequestBody UpdateCategoriaRequest request) {
+        return service.update(id, request);
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) { service.delete(id); }

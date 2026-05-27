@@ -12,4 +12,9 @@ public interface UsuarioService {
     List<UsuarioResponse> list();
 
     UsuarioResponse getById(Long id);
+
+    UsuarioResponse update(Long id, UpdateUsuarioRequest request);
+
+    void delete(Long id);
 }
+

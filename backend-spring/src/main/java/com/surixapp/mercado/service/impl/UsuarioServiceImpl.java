@@ -1,6 +1,7 @@
 package com.surixapp.mercado.service.impl;
 
 import com.surixapp.mercado.dto.*;
+
 import com.surixapp.mercado.entity.*;
 import com.surixapp.mercado.exception.ResourceNotFoundException;
 import com.surixapp.mercado.repository.*;
@@ -41,8 +42,27 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
+    public UsuarioResponse update(Long id, com.surixapp.mercado.dto.UpdateUsuarioRequest request) {
+        Usuario existing = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario " + id + " not found"));
+
+        existing.setUsername(request.getUsername());
+        existing.setPassword(request.getPassword()); // en producción hashear con BCrypt
+
+        return toResponse(usuarioRepository.save(existing));
+    }
+
+    @Override
+    public void delete(Long id) {
+        if (!usuarioRepository.existsById(id))
+            throw new ResourceNotFoundException("Usuario " + id + " not found");
+        usuarioRepository.deleteById(id);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<UsuarioResponse> list() {
+
         return usuarioRepository.findAll().stream().map(this::toResponse).toList();
     }
 

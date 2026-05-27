@@ -7,5 +7,9 @@ public interface CategoriaService {
     CategoriaResponse create(CreateCategoriaRequest request);
     List<CategoriaResponse> list();
     CategoriaResponse getById(Long id);
+
+    CategoriaResponse update(Long id, UpdateCategoriaRequest request);
+
     void delete(Long id);
 }
+

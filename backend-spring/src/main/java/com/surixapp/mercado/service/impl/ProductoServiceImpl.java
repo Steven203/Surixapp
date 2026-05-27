@@ -61,6 +61,27 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    public ProductoResponse update(Long id, com.surixapp.mercado.dto.UpdateProductoRequest request) {
+        Producto existing = productoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Producto " + id + " not found"));
+
+        existing.setNombre(request.getNombre());
+        existing.setPrecio(request.getPrecio());
+        existing.setDescripcion(request.getDescripcion());
+        existing.setStock(request.getStock());
+
+        Estante estante = estanteRepository.findById(request.getEstanteId())
+                .orElseThrow(() -> new ResourceNotFoundException("Estante not found"));
+        Categoria categoria = categoriaRepository.findById(request.getCategoriaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Categoria not found"));
+
+        existing.setEstante(estante);
+        existing.setCategoria(categoria);
+
+        return toResponse(productoRepository.save(existing));
+    }
+
+    @Override
     public void delete(Long id) {
         if (!productoRepository.existsById(id))
             throw new ResourceNotFoundException("Producto " + id + " not found");
@@ -68,6 +89,7 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     private ProductoResponse toResponse(Producto p) {
+
         ProductoResponse r = new ProductoResponse();
         r.setId(p.getId());
         r.setNombre(p.getNombre());
