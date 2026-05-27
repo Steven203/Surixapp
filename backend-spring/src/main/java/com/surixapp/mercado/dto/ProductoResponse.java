@@ -1,13 +1,16 @@
-// dto/ProductoResponse.java
 package com.surixapp.mercado.dto;
 
 public class ProductoResponse {
     private Long id;
     private String nombre;
     private Double precio;
+    private String descripcion;
+    private Integer stock;
     private Long estanteId;
     private String estanteNombre;
     private Integer ordenLogico;
+    private Long categoriaId;
+    private String categoriaNombre;
 
     public Long getId() {
         return id;
@@ -33,6 +36,22 @@ public class ProductoResponse {
         this.precio = precio;
     }
 
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
+    }
+
     public Long getEstanteId() {
         return estanteId;
     }
@@ -55,5 +74,21 @@ public class ProductoResponse {
 
     public void setOrdenLogico(Integer ordenLogico) {
         this.ordenLogico = ordenLogico;
+    }
+
+    public Long getCategoriaId() {
+        return categoriaId;
+    }
+
+    public void setCategoriaId(Long categoriaId) {
+        this.categoriaId = categoriaId;
+    }
+
+    public String getCategoriaNombre() {
+        return categoriaNombre;
+    }
+
+    public void setCategoriaNombre(String categoriaNombre) {
+        this.categoriaNombre = categoriaNombre;
     }
 }

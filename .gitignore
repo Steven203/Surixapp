@@ -1,20 +1,27 @@
-# ----------------------
+# ======================
 # Java / Spring Boot
-# ----------------------
-# Maven
+# ======================
 target/
 **/target/
-.mvn/wrapper/maven-wrapper.jar
-*.log
 *.class
+*.log
+*.jar
+*.war
+*.ear
+logs/
+hs_err_pid*
+replay_pid*
+
+# Maven Wrapper
+.mvn/wrapper/maven-wrapper.jar
 
 # IDEs
 .idea/
 *.iml
 *.ipr
 *.iws
-*.classpath
-*.project
+.classpath
+.project
 .settings/
 .vscode/
 
@@ -22,28 +29,53 @@ target/
 .DS_Store
 Thumbs.db
 
-# ----------------------
+# ======================
 # Node / Next.js
-# ----------------------
+# ======================
 node_modules/
 **/node_modules/
 .next/
 out/
-dist/
+coverage/
 build/
+dist/
+*.tsbuildinfo
+.next-cache/
+
+# Package managers / caches
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.npm/
+.eslintcache
+.stylelintcache
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
-# Env
+# Env files
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+!.env.template
 
-# Deployment / hosting
+# Next.js / Vercel
 .vercel/
 
-# Nota: las rutas específicas de backend/frontend ya están cubiertas por los patrones globales anteriores.
+# TypeScript
+next-env.d.ts
+
+# Secrets / certs
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx

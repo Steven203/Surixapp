@@ -1,4 +1,3 @@
-// repository/ListaCompraRepository.java
 package com.surixapp.mercado.repository;
 
 import com.surixapp.mercado.entity.ListaCompra;
@@ -7,4 +6,5 @@ import java.util.List;
 
 public interface ListaCompraRepository extends JpaRepository<ListaCompra, Long> {
     List<ListaCompra> findByUsuarioId(Long usuarioId);
+    boolean existsByUsuarioIdAndEstado(Long usuarioId, ListaCompra.Estado estado);
 }

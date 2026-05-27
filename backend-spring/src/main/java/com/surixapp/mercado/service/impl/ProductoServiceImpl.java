@@ -15,11 +15,13 @@ public class ProductoServiceImpl implements ProductoService {
 
     private final ProductoRepository productoRepository;
     private final EstanteRepository estanteRepository;
+    private final CategoriaRepository categoriaRepository;
 
     public ProductoServiceImpl(ProductoRepository productoRepository,
-            EstanteRepository estanteRepository) {
+            EstanteRepository estanteRepository, CategoriaRepository categoriaRepository) {
         this.productoRepository = productoRepository;
         this.estanteRepository = estanteRepository;
+        this.categoriaRepository = categoriaRepository;
     }
 
     @Override
@@ -27,11 +29,21 @@ public class ProductoServiceImpl implements ProductoService {
         Producto p = new Producto();
         p.setNombre(request.getNombre());
         p.setPrecio(request.getPrecio());
+        p.setDescripcion(request.getDescripcion());
+        p.setStock(request.getStock() != null ? request.getStock() : 0);
+
         if (request.getEstanteId() != null) {
             Estante estante = estanteRepository.findById(request.getEstanteId())
                     .orElseThrow(() -> new ResourceNotFoundException("Estante not found"));
             p.setEstante(estante);
         }
+
+        if (request.getCategoriaId() != null) {
+            Categoria categoria = categoriaRepository.findById(request.getCategoriaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Categoria not found"));
+            p.setCategoria(categoria);
+        }
+
         return toResponse(productoRepository.save(p));
     }
 
@@ -60,10 +72,16 @@ public class ProductoServiceImpl implements ProductoService {
         r.setId(p.getId());
         r.setNombre(p.getNombre());
         r.setPrecio(p.getPrecio());
+        r.setDescripcion(p.getDescripcion());
+        r.setStock(p.getStock());
         if (p.getEstante() != null) {
             r.setEstanteId(p.getEstante().getId());
             r.setEstanteNombre(p.getEstante().getNombre());
             r.setOrdenLogico(p.getEstante().getOrdenLogico());
+        }
+        if (p.getCategoria() != null) {
+            r.setCategoriaId(p.getCategoria().getId());
+            r.setCategoriaNombre(p.getCategoria().getNombre());
         }
         return r;
     }

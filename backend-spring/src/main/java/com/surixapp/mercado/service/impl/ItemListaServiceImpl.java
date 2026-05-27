@@ -2,6 +2,7 @@ package com.surixapp.mercado.service.impl;
 
 import com.surixapp.mercado.dto.*;
 import com.surixapp.mercado.entity.*;
+import com.surixapp.mercado.exception.BusinessException;
 import com.surixapp.mercado.exception.ResourceNotFoundException;
 import com.surixapp.mercado.repository.*;
 import com.surixapp.mercado.service.ItemListaService;
@@ -29,8 +30,18 @@ public class ItemListaServiceImpl implements ItemListaService {
     public ItemListaResponse addItem(Long listaId, CreateItemListaRequest request) {
         ListaCompra lista = listaRepository.findById(listaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lista not found"));
+
+        // validar lista no finalizada
+        if (lista.getEstado() == ListaCompra.Estado.FINALIZADA)
+            throw new BusinessException("No se puede agregar items a una lista finalizada");
+
         Producto producto = productoRepository.findById(request.getProductoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Producto not found"));
+
+        // validar stock suficiente
+        if (request.getCantidad() > producto.getStock())
+            throw new BusinessException("Stock insuficiente. Disponible: " + producto.getStock());
+
         ItemLista item = new ItemLista();
         item.setLista(lista);
         item.setProducto(producto);
@@ -43,6 +54,23 @@ public class ItemListaServiceImpl implements ItemListaService {
     public ItemListaResponse marcarRecogido(Long itemId) {
         ItemLista item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Item " + itemId + " not found"));
+
+        // validar lista no finalizada
+        if (item.getLista().getEstado() == ListaCompra.Estado.FINALIZADA)
+            throw new BusinessException("No se puede modificar una lista finalizada");
+
+        // validar que no esté ya recogido
+        if (item.getRecogido())
+            throw new BusinessException("El item ya fue marcado como recogido");
+
+        // descontar stock
+        Producto producto = item.getProducto();
+        int nuevoStock = producto.getStock() - item.getCantidad();
+        if (nuevoStock < 0)
+            throw new BusinessException("Stock insuficiente para descontar: " + producto.getNombre());
+        producto.setStock(nuevoStock);
+        productoRepository.save(producto);
+
         item.setRecogido(true);
         return toResponse(itemRepository.save(item));
     }
@@ -53,7 +81,6 @@ public class ItemListaServiceImpl implements ItemListaService {
         return itemRepository.findByListaId(listaId)
                 .stream()
                 .sorted((a, b) -> {
-                    // ordena por orden_logico del estante — la ruta sugerida
                     Integer oa = a.getProducto().getEstante() != null
                             ? a.getProducto().getEstante().getOrdenLogico() : Integer.MAX_VALUE;
                     Integer ob = b.getProducto().getEstante() != null
@@ -65,8 +92,13 @@ public class ItemListaServiceImpl implements ItemListaService {
 
     @Override
     public void removeItem(Long itemId) {
-        if (!itemRepository.existsById(itemId))
-            throw new ResourceNotFoundException("Item " + itemId + " not found");
+        ItemLista item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Item " + itemId + " not found"));
+
+        // validar lista no finalizada
+        if (item.getLista().getEstado() == ListaCompra.Estado.FINALIZADA)
+            throw new BusinessException("No se puede eliminar items de una lista finalizada");
+
         itemRepository.deleteById(itemId);
     }
 

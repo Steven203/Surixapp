@@ -2,6 +2,7 @@ package com.surixapp.mercado.service.impl;
 
 import com.surixapp.mercado.dto.*;
 import com.surixapp.mercado.entity.*;
+import com.surixapp.mercado.exception.BusinessException;
 import com.surixapp.mercado.exception.ResourceNotFoundException;
 import com.surixapp.mercado.repository.*;
 import com.surixapp.mercado.service.ListaCompraService;
@@ -26,6 +27,13 @@ public class ListaCompraServiceImpl implements ListaCompraService {
     public ListaCompraResponse create(CreateListaCompraRequest request) {
         Usuario u = usuarioRepository.findById(request.getUsuarioId())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario not found"));
+
+        // validar que no tenga lista activa
+        boolean tieneListaActiva = listaRepository.existsByUsuarioIdAndEstado(
+                request.getUsuarioId(), ListaCompra.Estado.EN_PROCESO);
+        if (tieneListaActiva)
+            throw new BusinessException("El usuario ya tiene una lista en proceso");
+
         ListaCompra lista = new ListaCompra();
         lista.setUsuario(u);
         lista.setEstado(ListaCompra.Estado.EN_PROCESO);
@@ -50,6 +58,10 @@ public class ListaCompraServiceImpl implements ListaCompraService {
     public ListaCompraResponse finalizar(Long id) {
         ListaCompra lista = listaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Lista " + id + " not found"));
+
+        if (lista.getEstado() == ListaCompra.Estado.FINALIZADA)
+            throw new BusinessException("La lista ya está finalizada");
+
         lista.setEstado(ListaCompra.Estado.FINALIZADA);
         return toResponse(listaRepository.save(lista));
     }
