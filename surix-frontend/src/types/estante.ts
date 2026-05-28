@@ -1,6 +1,7 @@
 export type Estante = {
-  id?: string | number;
-  nombre?: string;
-  orden_logico?: number;
-};
-
+    id: number
+    nombre: string
+    coordX: number
+    coordY: number
+    ordenLogico: number
+}

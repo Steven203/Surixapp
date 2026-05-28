@@ -1,4 +1,3 @@
-export default function ClienteHomePage() {
-  return null;
+export default function ListaPage() {
+    return <h1>Lista de compras — Cliente</h1>
 }
-

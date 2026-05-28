@@ -1,6 +1,10 @@
 export type Usuario = {
-  id?: string | number;
-  nombre?: string;
-  role?: string;
-};
+    id: number
+    username: string
+    roles: string[]
+}
 
+export type Role = {
+    id: number
+    nombre: string
+}
