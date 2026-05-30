@@ -2,6 +2,10 @@
 
 import { useState } from 'react'
 import useSWR from 'swr'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { toast } from 'sonner'
 import { usuariosApi } from '@/api/usuarios'
 import { Usuario } from '@/types/usuario'
 import { Button } from '@/components/ui/button'
@@ -17,40 +21,50 @@ import {
     TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 
+const schema = z.object({
+    username: z.string()
+        .min(3, 'El username debe tener al menos 3 caracteres')
+        .max(100, 'El username no puede superar 100 caracteres')
+        .regex(/^[a-zA-Z0-9_]+$/, 'Solo letras, números y guión bajo'),
+    password: z.string()
+        .min(4, 'La contraseña debe tener al menos 4 caracteres')
+        .max(50, 'La contraseña no puede superar 50 caracteres'),
+})
+
+type FormData = z.infer<typeof schema>
+
 export default function UsuariosPage() {
     const { data: usuarios, mutate } = useSWR('/api/usuarios', usuariosApi.list)
-
     const [open, setOpen] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState('')
-    const [form, setForm] = useState({ username: '', password: '' })
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value })
-    }
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm<FormData>({
+        resolver: zodResolver(schema),
+    })
 
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setError('')
-        setLoading(true)
+    const onSubmit = async (data: FormData) => {
         try {
-            await usuariosApi.create(form)
+            await usuariosApi.create(data)
             mutate()
             setOpen(false)
-            setForm({ username: '', password: '' })
+            reset()
+            toast.success('Usuario creado exitosamente')
         } catch (err: any) {
-            setError(err.message)
-        } finally {
-            setLoading(false)
+            toast.error(err.message ?? 'Error al crear el usuario')
         }
     }
 
-    const handleAssignRole = async (usuarioId: number, roleId: number) => {
+    const handleAssignRole = async (usuarioId: number, roleId: number, rolNombre: string) => {
         try {
             await usuariosApi.assignRole(usuarioId, roleId)
             mutate()
+            toast.success(`Rol ${rolNombre} asignado correctamente`)
         } catch (err: any) {
-            alert(err.message)
+            toast.error(err.message ?? 'Error al asignar rol')
         }
     }
 
@@ -64,7 +78,7 @@ export default function UsuariosPage() {
                     </p>
                 </div>
 
-                <Dialog open={open} onOpenChange={setOpen}>
+                <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset() }}>
                     <DialogTrigger asChild>
                         <Button>+ Nuevo usuario</Button>
                     </DialogTrigger>
@@ -72,37 +86,41 @@ export default function UsuariosPage() {
                         <DialogHeader>
                             <DialogTitle>Crear usuario</DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleCreate} className="space-y-4 mt-2">
-                            <div className="space-y-2">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
+
+                            <div className="space-y-1">
                                 <Label>Username *</Label>
                                 <Input
-                                    name="username"
-                                    value={form.username}
-                                    onChange={handleChange}
+                                    {...register('username')}
                                     placeholder="juan123"
-                                    required
                                 />
+                                {errors.username && (
+                                    <p className="text-xs text-red-500">{errors.username.message}</p>
+                                )}
                             </div>
-                            <div className="space-y-2">
+
+                            <div className="space-y-1">
                                 <Label>Contraseña *</Label>
                                 <Input
-                                    name="password"
+                                    {...register('password')}
                                     type="password"
-                                    value={form.password}
-                                    onChange={handleChange}
                                     placeholder="••••••••"
-                                    required
                                 />
+                                {errors.password && (
+                                    <p className="text-xs text-red-500">{errors.password.message}</p>
+                                )}
                             </div>
 
-                            {error && <p className="text-sm text-red-500">{error}</p>}
-
                             <div className="flex justify-end gap-2 pt-2">
-                                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => { setOpen(false); reset() }}
+                                >
                                     Cancelar
                                 </Button>
-                                <Button type="submit" disabled={loading}>
-                                    {loading ? 'Guardando...' : 'Guardar'}
+                                <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting ? 'Guardando...' : 'Guardar'}
                                 </Button>
                             </div>
                         </form>
@@ -136,20 +154,14 @@ export default function UsuariosPage() {
                                 <TableCell className="text-right">
                                     <div className="flex gap-2 justify-end">
                                         {!u.roles.includes('ADMIN') && (
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => handleAssignRole(u.id, 1)}
-                                            >
+                                            <Button size="sm" variant="outline"
+                                                onClick={() => handleAssignRole(u.id, 1, 'ADMIN')}>
                                                 + ADMIN
                                             </Button>
                                         )}
                                         {!u.roles.includes('CLIENTE') && (
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => handleAssignRole(u.id, 2)}
-                                            >
+                                            <Button size="sm" variant="outline"
+                                                onClick={() => handleAssignRole(u.id, 2, 'CLIENTE')}>
                                                 + CLIENTE
                                             </Button>
                                         )}

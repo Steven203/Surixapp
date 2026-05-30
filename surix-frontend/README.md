@@ -125,14 +125,21 @@ NEXT_PUBLIC_API_URL=http://localhost:8080
 
 ```bash
 # instalar dependencias
-npm install
+pnpm install
 
-# correr en desarrollo
-npm run dev
+#  Desarrollo local
+pnpm dev
 
-# build producción
-npm run build
-npm start
-```
+
+# Compilar para producción
+
+pnpm build
+
+# Ejecutar modo producción
+pnpm start
+
+#Revisar errores de código
+
+pnpm lint
 
 La app corre en `http://localhost:3000`

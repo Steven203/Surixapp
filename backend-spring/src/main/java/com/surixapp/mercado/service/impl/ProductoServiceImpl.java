@@ -2,6 +2,7 @@ package com.surixapp.mercado.service.impl;
 
 import com.surixapp.mercado.dto.*;
 import com.surixapp.mercado.entity.*;
+import com.surixapp.mercado.exception.BusinessException;
 import com.surixapp.mercado.exception.ResourceNotFoundException;
 import com.surixapp.mercado.repository.*;
 import com.surixapp.mercado.service.ProductoService;
@@ -16,12 +17,16 @@ public class ProductoServiceImpl implements ProductoService {
     private final ProductoRepository productoRepository;
     private final EstanteRepository estanteRepository;
     private final CategoriaRepository categoriaRepository;
+    private final ItemListaRepository itemListaRepository;
 
     public ProductoServiceImpl(ProductoRepository productoRepository,
-            EstanteRepository estanteRepository, CategoriaRepository categoriaRepository) {
+            EstanteRepository estanteRepository,
+            CategoriaRepository categoriaRepository,
+            ItemListaRepository itemListaRepository) {
         this.productoRepository = productoRepository;
         this.estanteRepository = estanteRepository;
         this.categoriaRepository = categoriaRepository;
+        this.itemListaRepository = itemListaRepository;
     }
 
     @Override
@@ -85,6 +90,13 @@ public class ProductoServiceImpl implements ProductoService {
     public void delete(Long id) {
         if (!productoRepository.existsById(id))
             throw new ResourceNotFoundException("Producto " + id + " not found");
+
+        // verifica si el producto está en alguna lista antes de borrar
+        boolean estaEnLista = itemListaRepository.existsByProductoId(id);
+        if (estaEnLista)
+            throw new BusinessException(
+                    "No puedes eliminar este producto porque está en una o más listas de compras");
+
         productoRepository.deleteById(id);
     }
 

@@ -2,29 +2,48 @@
 
 import { useState } from 'react'
 import useSWR from 'swr'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { toast } from 'sonner'
 import { productosApi } from '@/api/productos'
 import { estantesApi } from '@/api/estantes'
 import { categoriasApi } from '@/api/categorias'
 import { Producto } from '@/types/producto'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+    Dialog, DialogContent, DialogHeader,
+    DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog'
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+    Table, TableBody, TableCell,
+    TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
-import { Input } from '@/components/ui/input'
+
+// esquema de validación — mensajes en español claros
+const schema = z.object({
+    nombre: z.string()
+        .min(1, 'El nombre es obligatorio')
+        .max(150, 'El nombre no puede superar 150 caracteres'),
+    precio: z.coerce.number()
+        .positive('El precio debe ser mayor a 0'),
+    stock: z.coerce.number()
+        .positive('El stock debe ser mayor a 0')
+        .int('El stock debe ser un número entero')
+        .nonnegative('El stock no puede ser negativo'),
+    descripcion: z.string().optional(),
+    estanteId: z.coerce.number({
+        invalid_type_error: 'Debes seleccionar un estante',
+    }).positive('Debes seleccionar un estante'),
+    categoriaId: z.coerce.number({
+        invalid_type_error: 'Debes seleccionar una categoría',
+    }).positive('Debes seleccionar una categoría').optional(),
+})
+
+type FormData = z.infer<typeof schema>
 
 export default function ProductosPage() {
     const { data: productos, mutate } = useSWR('/api/productos', productosApi.list)
@@ -32,53 +51,52 @@ export default function ProductosPage() {
     const { data: categorias } = useSWR('/api/categorias', categoriasApi.list)
 
     const [open, setOpen] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState('')
 
-    const [form, setForm] = useState({
-        nombre: '',
-        precio: '',
-        stock: '',
-        descripcion: '',
-        estanteId: '',
-        categoriaId: '',
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm<FormData>({
+        resolver: zodResolver(schema),
     })
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value })
-    }
-
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setError('')
-        setLoading(true)
+    const onSubmit = async (data: FormData) => {
         try {
             await productosApi.create({
-                nombre: form.nombre,
-                precio: parseFloat(form.precio),
-                stock: parseInt(form.stock),
-                descripcion: form.descripcion || undefined,
-                estanteId: parseInt(form.estanteId),
-                categoriaId: form.categoriaId ? parseInt(form.categoriaId) : undefined,
+                nombre: data.nombre,
+                precio: data.precio,
+                stock: data.stock,
+                descripcion: data.descripcion,
+                estanteId: data.estanteId,
+                categoriaId: data.categoriaId,
             })
             mutate()
             setOpen(false)
-            setForm({ nombre: '', precio: '', stock: '', descripcion: '', estanteId: '', categoriaId: '' })
+            reset()
+            toast.success('Producto creado exitosamente')
         } catch (err: any) {
-            setError(err.message)
-        } finally {
-            setLoading(false)
+            toast.error(err.message ?? 'Error al crear el producto')
         }
     }
 
-    const handleDelete = async (id: number) => {
-        if (!confirm('¿Eliminar este producto?')) return
-        try {
-            await productosApi.delete(id)
-            mutate()
-        } catch (err: any) {
-            alert(err.message)
-        }
+    const handleDelete = async (id: number, nombre: string) => {
+        toast('¿Eliminar este producto?', {
+            description: nombre,
+            action: {
+                label: 'Eliminar',
+                onClick: async () => {
+                    try {
+                        await productosApi.delete(id)
+                        mutate()
+                        toast.success('Producto eliminado')
+                    } catch (err: any) {
+                        toast.error(err.message ?? 'Error al eliminar')
+                    }
+                },
+            },
+            cancel: { label: 'Cancelar', onClick: () => {} },
+        })
     }
 
     return (
@@ -91,7 +109,7 @@ export default function ProductosPage() {
                     </p>
                 </div>
 
-                <Dialog open={open} onOpenChange={setOpen}>
+                <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset() }}>
                     <DialogTrigger asChild>
                         <Button>+ Nuevo producto</Button>
                     </DialogTrigger>
@@ -99,57 +117,42 @@ export default function ProductosPage() {
                         <DialogHeader>
                             <DialogTitle>Crear producto</DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleCreate} className="space-y-4 mt-2">
-                            <div className="space-y-2">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
+
+                            <div className="space-y-1">
                                 <Label>Nombre *</Label>
-                                <Input
-                                    name="nombre"
-                                    value={form.nombre}
-                                    onChange={handleChange}
-                                    placeholder="Leche entera 1L"
-                                    required
-                                />
+                                <Input {...register('nombre')} placeholder="Leche entera 1L" />
+                                {errors.nombre && (
+                                    <p className="text-xs text-red-500">{errors.nombre.message}</p>
+                                )}
                             </div>
+
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <Label>Precio *</Label>
-                                    <Input
-                                        name="precio"
-                                        type="number"
-                                        value={form.precio}
-                                        onChange={handleChange}
-                                        placeholder="3500"
-                                        required
-                                    />
+                                    <Input {...register('precio')} type="number" placeholder="3500" />
+                                    {errors.precio && (
+                                        <p className="text-xs text-red-500">{errors.precio.message}</p>
+                                    )}
                                 </div>
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     <Label>Stock *</Label>
-                                    <Input
-                                        name="stock"
-                                        type="number"
-                                        value={form.stock}
-                                        onChange={handleChange}
-                                        placeholder="50"
-                                        required
-                                    />
+                                    <Input {...register('stock')} type="number" placeholder="50" />
+                                    {errors.stock && (
+                                        <p className="text-xs text-red-500">{errors.stock.message}</p>
+                                    )}
                                 </div>
                             </div>
-                            <div className="space-y-2">
+
+                            <div className="space-y-1">
                                 <Label>Descripción</Label>
-                                <Input
-                                    name="descripcion"
-                                    value={form.descripcion}
-                                    onChange={handleChange}
-                                    placeholder="Descripción opcional"
-                                />
+                                <Input {...register('descripcion')} placeholder="Descripción opcional" />
                             </div>
-                            <div className="space-y-2">
+
+                            <div className="space-y-1">
                                 <Label>Estante *</Label>
                                 <select
-                                    name="estanteId"
-                                    value={form.estanteId}
-                                    onChange={handleChange}
-                                    required
+                                    {...register('estanteId')}
                                     className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
                                 >
                                     <option value="">Seleccionar estante</option>
@@ -159,38 +162,33 @@ export default function ProductosPage() {
                                         </option>
                                     ))}
                                 </select>
+                                {errors.estanteId && (
+                                    <p className="text-xs text-red-500">{errors.estanteId.message}</p>
+                                )}
                             </div>
-                            <div className="space-y-2">
+
+                            <div className="space-y-1">
                                 <Label>Categoría</Label>
                                 <select
-                                    name="categoriaId"
-                                    value={form.categoriaId}
-                                    onChange={handleChange}
+                                    {...register('categoriaId')}
                                     className="w-full border border-slate-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
                                 >
-                                    <option value="">Sin categoría</option>
+                                    <option value="">Seleccionar categoría</option>
                                     {categorias?.map(c => (
-                                        <option key={c.id} value={c.id}>
-                                            {c.nombre}
-                                        </option>
+                                        <option key={c.id} value={c.id}>{c.nombre}</option>
                                     ))}
                                 </select>
+                                {errors.categoriaId && (
+                                    <p className="text-xs text-red-500">{errors.categoriaId.message}</p>
+                                )}
                             </div>
 
-                            {error && (
-                                <p className="text-sm text-red-500">{error}</p>
-                            )}
-
                             <div className="flex justify-end gap-2 pt-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setOpen(false)}
-                                >
+                                <Button type="button" variant="outline" onClick={() => { setOpen(false); reset() }}>
                                     Cancelar
                                 </Button>
-                                <Button type="submit" disabled={loading}>
-                                    {loading ? 'Guardando...' : 'Guardar'}
+                                <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting ? 'Guardando...' : 'Guardar'}
                                 </Button>
                             </div>
                         </form>
@@ -223,11 +221,8 @@ export default function ProductosPage() {
                                 <TableCell>{p.estanteNombre ?? '—'}</TableCell>
                                 <TableCell>{p.categoriaNombre ?? '—'}</TableCell>
                                 <TableCell className="text-right">
-                                    <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={() => handleDelete(p.id)}
-                                    >
+                                    <Button variant="destructive" size="sm"
+                                        onClick={() => handleDelete(p.id, p.nombre)}>
                                         Eliminar
                                     </Button>
                                 </TableCell>

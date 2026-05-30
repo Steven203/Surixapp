@@ -48,4 +48,29 @@ public class GlobalExceptionHandler {
         body.put("fields", fields);
         return ResponseEntity.badRequest().body(body);
     }
+
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrity(
+            org.springframework.dao.DataIntegrityViolationException ex,
+            HttpServletRequest req) {
+        String message = "Violacion de integridad de datos, acción no permitida";
+
+        String cause = ex.getMostSpecificCause().getMessage().toLowerCase();
+        if (cause.contains("orden_logico"))
+            message = "El orden lógico ya está en uso por otro estante";
+        else if (cause.contains("estantes") && cause.contains("nombre"))
+            message = "Ya existe un estante con ese nombre";
+        else if (cause.contains("categoria") && cause.contains("nombre"))
+            message = "Ya existe una categoría con ese nombre";
+        else if (cause.contains("username"))
+            message = "El username ya está en uso";
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("code", "DUPLICATE_ERROR");
+        body.put("message", message);
+        body.put("timestamp", Instant.now());
+        body.put("path", req.getRequestURI());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
 }

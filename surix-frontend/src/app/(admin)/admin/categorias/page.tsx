@@ -2,6 +2,10 @@
 
 import { useState } from 'react'
 import useSWR from 'swr'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { toast } from 'sonner'
 import { categoriasApi } from '@/api/categorias'
 import { Categoria } from '@/types/categoria'
 import { Button } from '@/components/ui/button'
@@ -16,45 +20,64 @@ import {
     TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 
+// esquema de validación — mensajes en español claros
+const schema = z.object({
+    nombre: z.string()
+        .min(1, 'El nombre es obligatorio')
+        .max(150, 'El nombre no puede superar 150 caracteres'),
+    descripcion: z.string().optional(),
+})
+
+type FormData = z.infer<typeof schema>
+
+
 export default function CategoriasPage() {
     const { data: categorias, mutate } = useSWR('/api/categorias', categoriasApi.list)
 
     const [open, setOpen] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState('')
-    const [form, setForm] = useState({ nombre: '', descripcion: '' })
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value })
-    }
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm<FormData>({
+        resolver: zodResolver(schema),
+    })
 
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setError('')
-        setLoading(true)
+    const onSubmit = async (data: FormData) => {
         try {
             await categoriasApi.create({
-                nombre: form.nombre,
-                descripcion: form.descripcion || undefined,
+                nombre: data.nombre,
+                descripcion: data.descripcion,
             })
             mutate()
             setOpen(false)
-            setForm({ nombre: '', descripcion: '' })
+            reset()
+            toast.success('Categoría creada')
         } catch (err: any) {
-            setError(err.message)
-        } finally {
-            setLoading(false)
+            toast.error(err.message ?? 'Error al crear la categoría')
         }
     }
 
-    const handleDelete = async (id: number) => {
-        if (!confirm('¿Eliminar esta categoría?')) return
-        try {
-            await categoriasApi.delete(id)
-            mutate()
-        } catch (err: any) {
-            alert(err.message)
-        }
+
+    const handleDelete = async (id: number, nombre: string) => {
+        toast('¿Eliminar esta categoría?', {
+            description: nombre,
+            action: {
+                label: 'Eliminar',
+                onClick: async () => {
+                    try {
+                        await categoriasApi.delete(id)
+                        mutate()
+                        toast.success('Categoría eliminada')
+                    } catch (err: any) {
+                        toast.error(err.message ?? 'Error al eliminar')
+                    }
+                },
+            },
+            cancel: { label: 'Cancelar', onClick: () => { } },
+        })
     }
 
     return (
@@ -67,7 +90,7 @@ export default function CategoriasPage() {
                     </p>
                 </div>
 
-                <Dialog open={open} onOpenChange={setOpen}>
+                <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset() }}>
                     <DialogTrigger asChild>
                         <Button>+ Nueva categoría</Button>
                     </DialogTrigger>
@@ -75,35 +98,25 @@ export default function CategoriasPage() {
                         <DialogHeader>
                             <DialogTitle>Crear categoría</DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleCreate} className="space-y-4 mt-2">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
                             <div className="space-y-2">
                                 <Label>Nombre *</Label>
-                                <Input
-                                    name="nombre"
-                                    value={form.nombre}
-                                    onChange={handleChange}
-                                    placeholder="Lácteos"
-                                    required
-                                />
+                                <Input {...register('nombre')} placeholder="Leche entera 1L" />
+                                {errors.nombre && (
+                                    <p className="text-xs text-red-500">{errors.nombre.message}</p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label>Descripción</Label>
-                                <Input
-                                    name="descripcion"
-                                    value={form.descripcion}
-                                    onChange={handleChange}
-                                    placeholder="Descripción opcional"
-                                />
+                                <Input {...register('descripcion')} placeholder="Descripción opcional" />
                             </div>
 
-                            {error && <p className="text-sm text-red-500">{error}</p>}
-
                             <div className="flex justify-end gap-2 pt-2">
-                                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                                <Button type="button" variant="outline" onClick={() => { setOpen(false); reset() }}>
                                     Cancelar
                                 </Button>
-                                <Button type="submit" disabled={loading}>
-                                    {loading ? 'Guardando...' : 'Guardar'}
+                                <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting ? 'Guardando...' : 'Guardar'}
                                 </Button>
                             </div>
                         </form>

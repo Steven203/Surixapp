@@ -2,6 +2,10 @@
 
 import { useState } from 'react'
 import useSWR from 'swr'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { toast } from 'sonner'
 import { estantesApi } from '@/api/estantes'
 import { Estante } from '@/types/estante'
 import { Button } from '@/components/ui/button'
@@ -16,49 +20,66 @@ import {
     TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 
+// esquema de validación — mensajes en español claros
+const schema = z.object({
+    nombre: z.string().min(1, 'El nombre es obligatorio'),
+    coordX: z.coerce.number().positive('La coordenada X debe ser mayor a 0').int('La coordenada X debe ser un número entero'),
+    coordY: z.coerce.number().positive('La coordenada Y debe ser mayor a 0').int('La coordenada Y debe ser un número entero'),
+    ordenLogico: z.coerce.number({
+        invalid_type_error: 'El orden lógico es obligatorio',
+    }).positive('El orden lógico debe ser mayor a 0').int('El orden lógico debe ser un número entero'),
+})
+
+type FormData = z.infer<typeof schema>
+
 export default function EstantesPage() {
     const { data: estantes, mutate } = useSWR('/api/estantes', estantesApi.list)
 
     const [open, setOpen] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState('')
-    const [form, setForm] = useState({
-        nombre: '', coordX: '', coordY: '', ordenLogico: ''
+
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm<FormData>({
+        resolver: zodResolver(schema),
     })
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value })
-    }
-
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setError('')
-        setLoading(true)
+    const onSubmit = async (data: FormData) => {
         try {
             await estantesApi.create({
-                nombre: form.nombre,
-                coordX: parseFloat(form.coordX),
-                coordY: parseFloat(form.coordY),
-                ordenLogico: parseInt(form.ordenLogico),
+                nombre: data.nombre,
+                coordX: data.coordX,
+                coordY: data.coordY,
+                ordenLogico: data.ordenLogico,
             })
             mutate()
             setOpen(false)
-            setForm({ nombre: '', coordX: '', coordY: '', ordenLogico: '' })
+            reset()
+            toast.success('Estante creado')
         } catch (err: any) {
-            setError(err.message)
-        } finally {
-            setLoading(false)
+            toast.error(err.message ?? 'Error al crear el estante')
         }
     }
 
-    const handleDelete = async (id: number) => {
-        if (!confirm('¿Eliminar este estante?')) return
-        try {
-            await estantesApi.delete(id)
-            mutate()
-        } catch (err: any) {
-            alert(err.message)
-        }
+    const handleDelete = async (id: number, nombre: string) => {
+        toast('¿Eliminar este estante?', {
+            description: nombre,
+            action: {
+                label: 'Eliminar',
+                onClick: async () => {
+                    try {
+                        await estantesApi.delete(id)
+                        mutate()
+                        toast.success('Estante eliminado')
+                    } catch (err: any) {
+                        toast.error(err.message ?? 'Error al eliminar')
+                    }
+                },
+            },
+            cancel: { label: 'Cancelar', onClick: () => { } },
+        })
     }
 
     return (
@@ -71,7 +92,7 @@ export default function EstantesPage() {
                     </p>
                 </div>
 
-                <Dialog open={open} onOpenChange={setOpen}>
+                <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset() }}>
                     <DialogTrigger asChild>
                         <Button>+ Nuevo estante</Button>
                     </DialogTrigger>
@@ -79,59 +100,45 @@ export default function EstantesPage() {
                         <DialogHeader>
                             <DialogTitle>Crear estante</DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleCreate} className="space-y-4 mt-2">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
                             <div className="space-y-2">
                                 <Label>Nombre *</Label>
-                                <Input
-                                    name="nombre"
-                                    value={form.nombre}
-                                    onChange={handleChange}
-                                    placeholder="Estante A"
-                                    required
-                                />
+                                <Input {...register('nombre')} placeholder="Estante A" />
+                                {errors.nombre && (
+                                    <p className="text-xs text-red-500">{errors.nombre.message}</p>
+                                )}
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Coord X</Label>
-                                    <Input
-                                        name="coordX"
-                                        type="number"
-                                        value={form.coordX}
-                                        onChange={handleChange}
-                                        placeholder="1"
-                                    />
+                                    <Input {...register('coordX')} type="number" placeholder="1" />
+                                    {errors.coordX && (
+                                        <p className="text-xs text-red-500">{errors.coordX.message}</p>
+                                    )}
+
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Coord Y</Label>
-                                    <Input
-                                        name="coordY"
-                                        type="number"
-                                        value={form.coordY}
-                                        onChange={handleChange}
-                                        placeholder="1"
-                                    />
+                                    <Input {...register('coordY')} type="number" placeholder="1" />
+                                    {errors.coordY && (
+                                        <p className="text-xs text-red-500">{errors.coordY.message}</p>
+                                    )}
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label>Orden lógico *</Label>
-                                <Input
-                                    name="ordenLogico"
-                                    type="number"
-                                    value={form.ordenLogico}
-                                    onChange={handleChange}
-                                    placeholder="1"
-                                    required
-                                />
+                                <Input {...register('ordenLogico')} type="number" placeholder="1" />
+                                {errors.ordenLogico && (
+                                    <p className="text-xs text-red-500">{errors.ordenLogico.message}</p>
+                                )}
                             </div>
 
-                            {error && <p className="text-sm text-red-500">{error}</p>}
-
                             <div className="flex justify-end gap-2 pt-2">
-                                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                                <Button type="button" variant="outline" onClick={() => { setOpen(false); reset() }}>
                                     Cancelar
                                 </Button>
-                                <Button type="submit" disabled={loading}>
-                                    {loading ? 'Guardando...' : 'Guardar'}
+                                <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting ? 'Guardando...' : 'Guardar'}
                                 </Button>
                             </div>
                         </form>
@@ -161,7 +168,7 @@ export default function EstantesPage() {
                                     <Button
                                         variant="destructive"
                                         size="sm"
-                                        onClick={() => handleDelete(e.id)}
+                                        onClick={() => handleDelete(e.id, e.nombre)}
                                     >
                                         Eliminar
                                     </Button>
