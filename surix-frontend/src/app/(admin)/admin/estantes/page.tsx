@@ -146,7 +146,7 @@ export default function EstantesPage() {
                 </Dialog>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-slate-50">

@@ -63,14 +63,7 @@ export default function ProductosPage() {
 
     const onSubmit = async (data: FormData) => {
         try {
-            await productosApi.create({
-                nombre: data.nombre,
-                precio: data.precio,
-                stock: data.stock,
-                descripcion: data.descripcion,
-                estanteId: data.estanteId,
-                categoriaId: data.categoriaId,
-            })
+            await productosApi.create(data)
             mutate()
             setOpen(false)
             reset()
@@ -101,7 +94,7 @@ export default function ProductosPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-800">Productos</h1>
                     <p className="text-slate-500 text-sm mt-1">
@@ -196,7 +189,7 @@ export default function ProductosPage() {
                 </Dialog>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-slate-50">

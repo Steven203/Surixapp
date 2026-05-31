@@ -70,7 +70,7 @@ export default function UsuariosPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-800">Usuarios</h1>
                     <p className="text-slate-500 text-sm mt-1">
@@ -128,7 +128,7 @@ export default function UsuariosPage() {
                 </Dialog>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-slate-50">
