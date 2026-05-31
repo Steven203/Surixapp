@@ -20,20 +20,17 @@ import {
     TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 
-// esquema de validación — mensajes en español claros
 const schema = z.object({
     nombre: z.string()
         .min(1, 'El nombre es obligatorio')
-        .max(150, 'El nombre no puede superar 150 caracteres'),
+        .max(100, 'Máximo 100 caracteres'),
     descripcion: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
 
-
 export default function CategoriasPage() {
     const { data: categorias, mutate } = useSWR('/api/categorias', categoriasApi.list)
-
     const [open, setOpen] = useState(false)
 
     const {
@@ -41,9 +38,7 @@ export default function CategoriasPage() {
         handleSubmit,
         reset,
         formState: { errors, isSubmitting },
-    } = useForm<FormData>({
-        resolver: zodResolver(schema),
-    })
+    } = useForm<FormData>({ resolver: zodResolver(schema) })
 
     const onSubmit = async (data: FormData) => {
         try {
@@ -51,12 +46,11 @@ export default function CategoriasPage() {
             mutate()
             setOpen(false)
             reset()
-            toast.success('Categoría creada')
+            toast.success('Categoría creada exitosamente')
         } catch (err: any) {
             toast.error(err.message ?? 'Error al crear la categoría')
         }
     }
-
 
     const handleDelete = async (id: number, nombre: string) => {
         toast('¿Eliminar esta categoría?', {
@@ -73,7 +67,7 @@ export default function CategoriasPage() {
                     }
                 },
             },
-            cancel: { label: 'Cancelar', onClick: () => { } },
+            cancel: { label: 'Cancelar', onClick: () => {} },
         })
     }
 
@@ -89,27 +83,27 @@ export default function CategoriasPage() {
 
                 <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset() }}>
                     <DialogTrigger asChild>
-                        <Button>+ Nueva categoría</Button>
+                        <Button className="w-full sm:w-auto">+ Nueva categoría</Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                         <DialogHeader>
                             <DialogTitle>Crear categoría</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
-                            <div className="space-y-2">
+                            <div className="space-y-1">
                                 <Label>Nombre *</Label>
-                                <Input {...register('nombre')} placeholder="Leche entera 1L" />
+                                <Input {...register('nombre')} placeholder="Lácteos" />
                                 {errors.nombre && (
                                     <p className="text-xs text-red-500">{errors.nombre.message}</p>
                                 )}
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-1">
                                 <Label>Descripción</Label>
                                 <Input {...register('descripcion')} placeholder="Descripción opcional" />
                             </div>
-
                             <div className="flex justify-end gap-2 pt-2">
-                                <Button type="button" variant="outline" onClick={() => { setOpen(false); reset() }}>
+                                <Button type="button" variant="outline"
+                                    onClick={() => { setOpen(false); reset() }}>
                                     Cancelar
                                 </Button>
                                 <Button type="submit" disabled={isSubmitting}>
@@ -126,7 +120,7 @@ export default function CategoriasPage() {
                     <TableHeader>
                         <TableRow className="bg-slate-50">
                             <TableHead>Nombre</TableHead>
-                            <TableHead>Descripción</TableHead>
+                            <TableHead className="hidden sm:table-cell">Descripción</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -134,13 +128,12 @@ export default function CategoriasPage() {
                         {categorias?.map((c: Categoria) => (
                             <TableRow key={c.id}>
                                 <TableCell className="font-medium">{c.nombre}</TableCell>
-                                <TableCell>{c.descripcion ?? '—'}</TableCell>
+                                <TableCell className="hidden sm:table-cell">
+                                    {c.descripcion ?? '—'}
+                                </TableCell>
                                 <TableCell className="text-right">
-                                    <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={() => handleDelete(c.id)}
-                                    >
+                                    <Button variant="destructive" size="sm"
+                                        onClick={() => handleDelete(c.id, c.nombre)}>
                                         Eliminar
                                     </Button>
                                 </TableCell>

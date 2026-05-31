@@ -64,6 +64,8 @@ public class GlobalExceptionHandler {
             message = "Ya existe una categoría con ese nombre";
         else if (cause.contains("username"))
             message = "El username ya está en uso";
+        else if (cause.contains("producto") && cause.contains("nombre"))
+            message = "Ya existe un producto con ese nombre";
 
         Map<String, Object> body = new HashMap<>();
         body.put("code", "DUPLICATE_ERROR");

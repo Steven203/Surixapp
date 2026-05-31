@@ -196,8 +196,8 @@ export default function ProductosPage() {
                             <TableHead>Nombre</TableHead>
                             <TableHead>Precio</TableHead>
                             <TableHead>Stock</TableHead>
-                            <TableHead>Estante</TableHead>
-                            <TableHead>Categoría</TableHead>
+                            <TableHead className="hidden md:table-cell">Estante</TableHead>
+                            <TableHead className="hidden md:table-cell">Categoría</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -211,8 +211,8 @@ export default function ProductosPage() {
                                         {p.stock} und
                                     </Badge>
                                 </TableCell>
-                                <TableCell>{p.estanteNombre ?? '—'}</TableCell>
-                                <TableCell>{p.categoriaNombre ?? '—'}</TableCell>
+                                <TableCell className="hidden md:table-cell">{p.estanteNombre ?? '—'}</TableCell>
+                                <TableCell className="hidden lg:table-cell">{p.categoriaNombre ?? '—'}</TableCell>
                                 <TableCell className="text-right">
                                     <Button variant="destructive" size="sm"
                                         onClick={() => handleDelete(p.id, p.nombre)}>

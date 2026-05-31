@@ -133,7 +133,7 @@ export default function UsuariosPage() {
                     <TableHeader>
                         <TableRow className="bg-slate-50">
                             <TableHead>Username</TableHead>
-                            <TableHead>Roles</TableHead>
+                            <TableHead className="hidden sm:table-cell">Roles</TableHead>
                             <TableHead className="text-right">Asignar rol</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -141,7 +141,7 @@ export default function UsuariosPage() {
                         {usuarios?.map((u: Usuario) => (
                             <TableRow key={u.id}>
                                 <TableCell className="font-medium">{u.username}</TableCell>
-                                <TableCell>
+                                <TableCell className="hidden sm:table-cell">
                                     <div className="flex gap-1 flex-wrap">
                                         {u.roles.length > 0
                                             ? u.roles.map(r => (
