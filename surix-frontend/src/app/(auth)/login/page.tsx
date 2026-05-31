@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { authApi } from '@/api/auth'
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input'
 export default function LoginPage() {
   const router = useRouter()
   const setUsuario = useAuthStore(s => s.setUsuario)
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get('redirect') ?? null
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -28,13 +30,14 @@ export default function LoginPage() {
       console.log('Usuario encontrado:', usuario)
       console.log('Roles:', usuario.roles)
       setUsuario(usuario)
+      
 
       if (usuario.roles.includes('ADMIN')) {
         console.log('Redirigiendo a admin...')
         router.push('/admin/productos')
       } else if (usuario.roles.includes('CLIENTE')) {
         console.log('Redirigiendo a lista...')
-        router.push('/lista')
+        router.push(redirect ?? '/lista')
       } else {
         setError('El usuario no tiene un rol asignado')
       }

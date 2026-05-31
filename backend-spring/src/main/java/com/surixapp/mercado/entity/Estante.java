@@ -10,7 +10,7 @@ public class Estante {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100, unique = true)
+    @Column(nullable = false, length = 100)
     private String nombre;
 
     @Column(name = "coord_x")
@@ -19,7 +19,7 @@ public class Estante {
     @Column(name = "coord_y")
     private Double coordY;
 
-    @Column(name = "orden_logico", unique = true)
+    @Column(name = "orden_logico")
     private Integer ordenLogico;
 
     public Long getId() { return id; }

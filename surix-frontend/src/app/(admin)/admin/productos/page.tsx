@@ -33,8 +33,8 @@ const schema = z.object({
     stock: z.coerce.number()
         .positive('El stock debe ser mayor a 0')
         .int('El stock debe ser un número entero')
-        .nonnegative('El stock no puede ser negativo'),
-    descripcion: z.string().optional(),
+        .nonnegative('El stock no puede ser negativo').max(10000, 'El stock no puede superar 10,000 unidades'),
+    descripcion: z.string().max(500, 'Máximo 500 caracteres').optional(),
     estanteId: z.coerce.number({
         invalid_type_error: 'Debes seleccionar un estante',
     }).positive('Debes seleccionar un estante'),
