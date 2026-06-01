@@ -20,7 +20,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
 
     const handleLogout = () => {
         logout()
-        router.push('/login')
+        router.push('/catalogo')
     }
 
     return (

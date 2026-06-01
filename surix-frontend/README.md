@@ -28,22 +28,25 @@ src/
 │   │   └── login/
 │   │       └── page.tsx
 │   ├── (admin)/                      # Rutas protegidas — rol ADMIN
-│   │   ├── layout.tsx                # verifica rol antes de renderizar
-│   │   ├── productos/
-│   │   │   └── page.tsx
-│   │   ├── estantes/
-│   │   │   └── page.tsx
-│   │   ├── categorias/
-│   │   │   └── page.tsx
-│   │   └── usuarios/
-│   │       └── page.tsx
+│   │   ├── layout.tsx
+|   |   |__admin          # verifica rol antes de renderizar
+│   │      ├── productos/
+│   │      │   └── page.tsx
+│   │      ├── estantes/
+│   │      │   └── page.tsx
+│   │      ├── categorias/
+│   │      │   └── page.tsx
+│   │      └── usuarios/
+│   │          └── page.tsx
 │   └── (cliente)/                    # Rutas protegidas — rol CLIENTE
-│       ├── layout.tsx
-│       ├── lista/
-│       │   └── page.tsx              # lista activa del cliente
-│       └── lista/[id]/
-│           └── page.tsx              # items con ruta sugerida
-│
+│   |    ├── layout.tsx
+│   |    ├── lista/
+│   |    │   └── page.tsx              # lista activa del cliente
+│   |    └── lista/[id]/
+│   |        └── page.tsx              # items con ruta sugerida
+│   |__catalogo
+|      |__page.tsx
+|
 ├── components/
 │   ├── ui/                           # componentes genéricos (shadcn/ui)
 │   │   ├── Button.tsx
@@ -63,9 +66,11 @@ src/
 │   │   ├── RutaSugerida.tsx          # items ordenados por orden_logico
 │   │   └── ListaActions.tsx          # botones agregar, finalizar
 │   └── layout/
-│       ├── Navbar.tsx
-│       └── Sidebar.tsx
-│
+│   |    ├── Navbar.tsx
+│   |    └── Sidebar.tsx
+│   |__ui
+|      |__ # componentes de shadcn descargados
+|
 ├── api/                              # capa de comunicación con el backend
 │   ├── client.ts                     # fetch base con URL y headers
 │   ├── usuarios.ts

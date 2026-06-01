@@ -2,8 +2,8 @@ import { apiFetch } from './client'
 import { Categoria } from '@/types/categoria'
 
 export const categoriasApi = {
-    list: () =>
-        apiFetch<Categoria[]>('/api/categorias'),
+    list: () => apiFetch<Categoria[]>('/api/categorias'),
+    getById: (id: number) => apiFetch<Categoria>(`/api/categorias/${id}`),
 
     create: (data: { nombre: string; descripcion?: string }) =>
         apiFetch<Categoria>('/api/categorias', {

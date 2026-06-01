@@ -28,15 +28,15 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                     label: 'Cerrar sesión igual',
                     onClick: () => {
                         logout()
-                        router.push('/login')
+                        router.push('/catalogo')
                     },
                 },
-                cancel: { label: 'Continuar comprando', onClick: () => {} },
+                cancel: { label: 'Continuar comprando', onClick: () => { } },
             })
             return
         }
         logout()
-        router.push('/login')
+        router.push('/catalogo')
     }
 
     return (
@@ -64,6 +64,13 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                                 )}
                             </button>
                         )}
+
+                        <button
+                            onClick={() => router.push('/catalogo')}
+                            className="text-sm text-slate-500 hover:text-slate-800 transition-colors"
+                        >
+                            Catálogo
+                        </button>
                         <button
                             onClick={handleLogout}
                             className="text-sm text-slate-500 hover:text-slate-800 transition-colors"
