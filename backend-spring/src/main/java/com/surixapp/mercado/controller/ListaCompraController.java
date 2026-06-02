@@ -63,6 +63,11 @@ public class ListaCompraController {
         return itemService.marcarRecogido(itemId);
     }
 
+    @PatchMapping("/items/{itemId}/desrecoger")
+    public ItemListaResponse desmarcarRecogido(@PathVariable Long itemId) {
+        return itemService.desmarcarRecogido(itemId);
+    }
+
     @DeleteMapping("/items/{itemId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeItem(@PathVariable Long itemId) {
@@ -74,5 +79,11 @@ public class ListaCompraController {
             @PathVariable Long itemId,
             @Valid @RequestBody UpdateItemCantidadRequest request) {
         return itemService.updateCantidad(itemId, request.getCantidad());
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        listaService.delete(id);
     }
 }

@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { useListaStore } from '@/store/listaStore'
+import { listasApi } from '@/api/listas'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -19,6 +21,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  
+  const { itemsLocales, limpiarLocales } = useListaStore()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,22 +31,33 @@ export default function LoginPage() {
 
     try {
       const usuario = await authApi.login(username, password)
-      console.log('Usuario encontrado:', usuario)
-      console.log('Roles:', usuario.roles)
       setUsuario(usuario)
-      
+
+      // si tiene items locales y es cliente → crear lista y sincronizar
+      if (itemsLocales.length > 0 && usuario.roles.includes('CLIENTE')) {
+        try {
+          const listas = await listasApi.getByUsuario(usuario.id)
+          let listaActiva = listas.find((l: any) => l.estado === 'EN_PROCESO')
+          if (!listaActiva) {
+            listaActiva = await listasApi.create(usuario.id)
+          }
+          for (const item of itemsLocales) {
+            try {
+              await listasApi.addItem(listaActiva.id, item.producto.id, item.cantidad)
+            } catch { /* ignora duplicados */ }
+          }
+          await limpiarLocales()
+        } catch { /* silencioso */ }
+      }
 
       if (usuario.roles.includes('ADMIN')) {
-        console.log('Redirigiendo a admin...')
         router.push('/admin/productos')
       } else if (usuario.roles.includes('CLIENTE')) {
-        console.log('Redirigiendo a lista...')
         router.push(redirect ?? '/lista')
       } else {
         setError('El usuario no tiene un rol asignado')
       }
     } catch (err: any) {
-      console.log('Error:', err)
       setError(err.message ?? 'Error al iniciar sesión')
     } finally {
       setLoading(false)

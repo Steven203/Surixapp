@@ -48,16 +48,18 @@ src/
 |      |__page.tsx
 |
 ├── components/
-│   ├── ui/                           # componentes genéricos (shadcn/ui)
-│   │   ├── Button.tsx
-│   │   ├── Input.tsx
-│   │   ├── Modal.tsx
-│   │   ├── Badge.tsx
-│   │   └── Table.tsx
+│   ├── ui/                           # componentes genéricos (shadcn/ui) puedes instalarlos
+│   │   ├── button.tsx
+│   │   ├── input.tsx
+│   │   ├── modal.tsx
+│   │   ├── badge.tsx
+│   │   └── table.tsx
 │   ├── productos/
 │   │   ├── ProductoCard.tsx
 │   │   ├── ProductoForm.tsx
 │   │   └── ProductoTable.tsx
+|   |   |__ ProductoFiltros.tsx
+|   |   
 │   ├── estantes/
 │   │   ├── EstanteForm.tsx
 │   │   └── EstanteMap.tsx            # mapa visual del supermercado
@@ -66,10 +68,9 @@ src/
 │   │   ├── RutaSugerida.tsx          # items ordenados por orden_logico
 │   │   └── ListaActions.tsx          # botones agregar, finalizar
 │   └── layout/
-│   |    ├── Navbar.tsx
-│   |    └── Sidebar.tsx
-│   |__ui
-|      |__ # componentes de shadcn descargados
+│       ├── Navbar.tsx
+│       └── Sidebar.tsx
+
 |
 ├── api/                              # capa de comunicación con el backend
 │   ├── client.ts                     # fetch base con URL y headers
@@ -97,7 +98,7 @@ src/
 │   ├── categoria.ts
 │   └── lista.ts
 │
-└── middleware.ts                     # protege rutas según rol
+└── proxy.ts                     # protege rutas según rol
 ```
 
 ## Convenciones

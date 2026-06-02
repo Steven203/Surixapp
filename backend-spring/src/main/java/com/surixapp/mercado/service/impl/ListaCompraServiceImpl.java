@@ -83,6 +83,15 @@ public class ListaCompraServiceImpl implements ListaCompraService {
         return toResponse(listaRepository.save(lista));
     }
 
+    @Override
+   public void delete(Long id) {
+    ListaCompra lista = listaRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Lista not found"));
+    if (lista.getEstado() == ListaCompra.Estado.FINALIZADA)
+        throw new BusinessException("No puedes eliminar una lista finalizada");
+    listaRepository.deleteById(id);  // cascade borra los items automáticamente
+}
+
     private ListaCompraResponse toResponse(ListaCompra lista) {
         ListaCompraResponse r = new ListaCompraResponse();
         r.setId(lista.getId());

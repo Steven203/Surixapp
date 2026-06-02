@@ -39,6 +39,16 @@ export const listasApi = {
             method: 'PATCH',
         }),
 
+    desmarcarRecogido: (itemId: number) =>
+    apiFetch<ItemLista>(`/api/listas/items/${itemId}/desrecoger`, {
+        method: 'PATCH',
+    }),
+
+    delete: (id: number) =>
+        apiFetch<void>(`/api/listas/${id}`, {
+            method: 'DELETE',
+        }),
+
     removeItem: (itemId: number) =>
         apiFetch<void>(`/api/listas/items/${itemId}`, {
             method: 'DELETE',

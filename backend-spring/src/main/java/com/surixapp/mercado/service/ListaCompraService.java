@@ -12,4 +12,6 @@ public interface ListaCompraService {
     ListaCompraResponse getById(Long id);
 
     ListaCompraResponse finalizar(Long id, boolean forzar);
+
+    void delete(Long id);
 }

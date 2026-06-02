@@ -1,37 +1,9 @@
-# TODO - PUT/DELETE ADMIN (Estante, Producto, Categoria, Usuario)
+# TODO - Integración de componentes/hooks sin romper lógica
 
-## Paso 1
-- Confirmar/crear DTOs:
-  - backend-spring/src/main/java/com/surixapp/mercado/dto/UpdateEstanteRequest.java
-  - backend-spring/src/main/java/com/surixapp/mercado/dto/UpdateProductoRequest.java (estanteId y categoriaId obligatorios)
-  - backend-spring/src/main/java/com/surixapp/mercado/dto/UpdateCategoriaRequest.java
-  - backend-spring/src/main/java/com/surixapp/mercado/dto/UpdateUsuarioRequest.java
-
-## Paso 2
-- Actualizar interfaces de service con método update/delete:
-  - EstanteService: update
-  - ProductoService: update
-  - CategoriaService: update
-  - UsuarioService: update + delete
-
-## Paso 3
-- Implementar lógica en *ServiceImpl*:
-  - Validar existencia (ResourceNotFoundException)
-  - Resolver relaciones (Producto -> Estante/Categoria) por IDs
-  - Persistir y retornar *Response*
-
-## Paso 4
-- Actualizar controllers con endpoints:
-  - PUT /api/estantes/{id}
-  - PUT /api/productos/{id}
-  - PUT /api/categorias/{id}
-  - PUT /api/usuarios/{id}
-  - DELETE /api/usuarios/{id}
-  ✅ Hecho
-
-## Paso 5
-- Compilar y verificar:
-  - mvn -q test (o mvn -q package)
-  - revisar errores de tipos/imports
-
-
+- [x] Verificar estructura vs README de `surix-frontend/`.
+- [x] Implementar `components/lista/ItemLista.tsx` (antes era stub) con el JSX ya existente en `app/(cliente)/lista/page.tsx`.
+- [x] Implementar `components/lista/RutaSugerida.tsx` (antes era stub) para que exista como componente real.
+- [x] Actualizar `app/(cliente)/lista/page.tsx` para renderizar ítems usando `ItemLista`.
+- [ ] Refactor 2 (seguir con `ListaActions.tsx`): mover solo UI de acciones que sea necesario a `ListaActions.tsx` y reemplazar en la page mediante props.
+- [ ] Verificar `lista/[id]/page.tsx` (actualmente `return null`) para integrarlo con `RutaSugerida`/`ItemLista` usando la misma lógica.
+- [ ] Ejecutar `pnpm lint` y `pnpm dev` en `surix-frontend` para validar compilación.

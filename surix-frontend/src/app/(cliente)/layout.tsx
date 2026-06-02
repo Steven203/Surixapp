@@ -5,12 +5,14 @@ import { useRouter, usePathname } from 'next/navigation'
 import useSWR from 'swr'
 import { listasApi } from '@/api/listas'
 import { toast } from 'sonner'
+import { useLista } from '@/hooks/useLista'
 
 export default function ClienteLayout({ children }: { children: React.ReactNode }) {
     const usuario = useAuthStore(s => s.usuario)
     const logout = useAuthStore(s => s.logout)
     const router = useRouter()
     const pathname = usePathname()
+    const { items, eliminarLista } = useLista()
 
     const { data: listas } = useSWR(
         usuario ? `/api/listas/usuario/${usuario.id}` : null,
@@ -20,8 +22,10 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
     const listaActiva = listas?.find(l => l.estado === 'EN_PROCESO')
     const estaEnLista = pathname === '/lista'
 
-    const handleLogout = () => {
-        if (listaActiva && (listaActiva.items?.length ?? 0) > 0) {
+    const handleLogout = async () => {
+        const tieneItems = (items?.length ?? 0) > 0
+
+        if (listaActiva && tieneItems) {
             toast('Tienes una lista activa sin finalizar', {
                 description: '¿Qué deseas hacer?',
                 action: {
@@ -35,8 +39,13 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
             })
             return
         }
+
+        if (listaActiva && !tieneItems) {
+            await eliminarLista()
+        }
+
         logout()
-        router.push('/catalogo')
+        router.push('/')
     }
 
     return (

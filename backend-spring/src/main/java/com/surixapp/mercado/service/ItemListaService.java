@@ -14,4 +14,6 @@ public interface ItemListaService {
     void removeItem(Long itemId);
 
     ItemListaResponse updateCantidad(Long itemId, Integer cantidad);
+
+    ItemListaResponse desmarcarRecogido(Long itemId);
 }

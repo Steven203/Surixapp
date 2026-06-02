@@ -38,6 +38,10 @@ public class ItemListaServiceImpl implements ItemListaService {
         Producto producto = productoRepository.findById(request.getProductoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Producto not found"));
 
+        if (itemRepository.existsByListaIdAndProductoId(listaId, request.getProductoId()))
+            throw new BusinessException(
+                    "El producto '" + producto.getNombre() + "' ya está en la lista");
+
         // validar stock suficiente
         if (request.getCantidad() > producto.getStock())
             throw new BusinessException("Stock insuficiente. Disponible: " + producto.getStock());
@@ -76,6 +80,18 @@ public class ItemListaServiceImpl implements ItemListaService {
     }
 
     @Override
+    public ItemListaResponse desmarcarRecogido(Long itemId) {
+        ItemLista item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found"));
+
+        if (item.getLista().getEstado() == ListaCompra.Estado.FINALIZADA)
+            throw new BusinessException("No se puede modificar una lista finalizada");
+
+        item.setRecogido(false);
+        return toResponse(itemRepository.save(item));
+    }
+
+    @Override
     public ItemListaResponse updateCantidad(Long itemId, Integer cantidad) {
         ItemLista item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found"));
@@ -89,7 +105,7 @@ public class ItemListaServiceImpl implements ItemListaService {
         if (cantidad > item.getProducto().getStock())
             throw new BusinessException("Stock insuficiente. Disponible: " + item.getProducto().getStock());
 
-        item.setCantidad(cantidad); 
+        item.setCantidad(cantidad);
         return toResponse(itemRepository.save(item));
     }
 
