@@ -26,7 +26,10 @@ src/
 ├── app/                              # App Router de Next.js
 │   ├── (auth)/                       # Rutas públicas
 │   │   └── login/
-│   │       └── page.tsx
+│   │   |    └── page.tsx
+|   |   |__ resgister/
+|   |       |__page.tsx
+|   |   
 │   ├── (admin)/                      # Rutas protegidas — rol ADMIN
 │   │   ├── layout.tsx
 |   |   |__admin          # verifica rol antes de renderizar
@@ -70,12 +73,12 @@ src/
 │   └── layout/
 │       ├── Navbar.tsx
 │       └── Sidebar.tsx
-
+|
 |
 ├── api/                              # capa de comunicación con el backend
 │   ├── client.ts                     # fetch base con URL y headers
 │   ├── usuarios.ts
-│   ├── roles.ts
+│   ├── auth.ts
 │   ├── productos.ts
 │   ├── estantes.ts
 │   ├── categorias.ts
@@ -86,6 +89,10 @@ src/
 │   ├── useProductos.ts
 │   ├── useLista.ts
 │   └── useRutaSugerida.ts
+|   |__ useCategorias.ts
+|   |__ useEstantes.ts
+|   |__ useProductosAdmin.ts
+|   |__ useUsuarios.ts
 │
 ├── store/                            # estado global con Zustand
 │   ├── authStore.ts                  # usuario logueado + rol

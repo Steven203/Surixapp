@@ -1,12 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import useSWR from 'swr'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { toast } from 'sonner'
-import { categoriasApi } from '@/api/categorias'
+import { useCategorias } from '@/hooks/useCategorias'
 import { Categoria } from '@/types/categoria'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,16 +19,14 @@ import {
 } from '@/components/ui/table'
 
 const schema = z.object({
-    nombre: z.string()
-        .min(1, 'El nombre es obligatorio')
-        .max(100, 'Máximo 100 caracteres'),
+    nombre: z.string().min(1, 'El nombre es obligatorio').max(100, 'Máximo 100 caracteres'),
     descripcion: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
 
 export default function CategoriasPage() {
-    const { data: categorias, mutate } = useSWR('/api/categorias', categoriasApi.list)
+    const { categorias, isLoading, crear, eliminar } = useCategorias()
     const [open, setOpen] = useState(false)
 
     const {
@@ -41,34 +37,8 @@ export default function CategoriasPage() {
     } = useForm<FormData>({ resolver: zodResolver(schema) })
 
     const onSubmit = async (data: FormData) => {
-        try {
-            await categoriasApi.create(data)
-            mutate()
-            setOpen(false)
-            reset()
-            toast.success('Categoría creada exitosamente')
-        } catch (err: any) {
-            toast.error(err.message ?? 'Error al crear la categoría')
-        }
-    }
-
-    const handleDelete = async (id: number, nombre: string) => {
-        toast('¿Eliminar esta categoría?', {
-            description: nombre,
-            action: {
-                label: 'Eliminar',
-                onClick: async () => {
-                    try {
-                        await categoriasApi.delete(id)
-                        mutate()
-                        toast.success('Categoría eliminada')
-                    } catch (err: any) {
-                        toast.error(err.message ?? 'Error al eliminar')
-                    }
-                },
-            },
-            cancel: { label: 'Cancelar', onClick: () => {} },
-        })
+        const ok = await crear(data)
+        if (ok) { setOpen(false); reset() }
     }
 
     return (
@@ -99,7 +69,7 @@ export default function CategoriasPage() {
                             </div>
                             <div className="space-y-1">
                                 <Label>Descripción</Label>
-                                <Input {...register('descripcion')} placeholder="Descripción opcional" />
+                                <Input {...register('descripcion')} placeholder="Opcional" />
                             </div>
                             <div className="flex justify-end gap-2 pt-2">
                                 <Button type="button" variant="outline"
@@ -133,13 +103,13 @@ export default function CategoriasPage() {
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <Button variant="destructive" size="sm"
-                                        onClick={() => handleDelete(c.id, c.nombre)}>
+                                        onClick={() => eliminar(c.id, c.nombre)}>
                                         Eliminar
                                     </Button>
                                 </TableCell>
                             </TableRow>
                         ))}
-                        {categorias?.length === 0 && (
+                        {!isLoading && categorias?.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={3} className="text-center text-slate-400 py-8">
                                     No hay categorías registradas

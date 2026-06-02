@@ -1,12 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import useSWR from 'swr'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { toast } from 'sonner'
-import { usuariosApi } from '@/api/usuarios'
+import { useUsuarios } from '@/hooks/useUsuarios'
 import { Usuario } from '@/types/usuario'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,18 +21,18 @@ import {
 
 const schema = z.object({
     username: z.string()
-        .min(3, 'El username debe tener al menos 3 caracteres')
-        .max(100, 'El username no puede superar 100 caracteres')
+        .min(3, 'Mínimo 3 caracteres')
+        .max(100, 'Máximo 100 caracteres')
         .regex(/^[a-zA-Z0-9_]+$/, 'Solo letras, números y guión bajo'),
     password: z.string()
-        .min(4, 'La contraseña debe tener al menos 4 caracteres')
-        .max(50, 'La contraseña no puede superar 50 caracteres'),
+        .min(4, 'Mínimo 4 caracteres')
+        .max(50, 'Máximo 50 caracteres'),
 })
 
 type FormData = z.infer<typeof schema>
 
 export default function UsuariosPage() {
-    const { data: usuarios, mutate } = useSWR('/api/usuarios', usuariosApi.list)
+    const { usuarios, isLoading, crear, asignarRol } = useUsuarios()
     const [open, setOpen] = useState(false)
 
     const {
@@ -42,30 +40,11 @@ export default function UsuariosPage() {
         handleSubmit,
         reset,
         formState: { errors, isSubmitting },
-    } = useForm<FormData>({
-        resolver: zodResolver(schema),
-    })
+    } = useForm<FormData>({ resolver: zodResolver(schema) })
 
     const onSubmit = async (data: FormData) => {
-        try {
-            await usuariosApi.create(data)
-            mutate()
-            setOpen(false)
-            reset()
-            toast.success('Usuario creado exitosamente')
-        } catch (err: any) {
-            toast.error(err.message ?? 'Error al crear el usuario')
-        }
-    }
-
-    const handleAssignRole = async (usuarioId: number, roleId: number, rolNombre: string) => {
-        try {
-            await usuariosApi.assignRole(usuarioId, roleId)
-            mutate()
-            toast.success(`Rol ${rolNombre} asignado correctamente`)
-        } catch (err: any) {
-            toast.error(err.message ?? 'Error al asignar rol')
-        }
+        const ok = await crear(data)
+        if (ok) { setOpen(false); reset() }
     }
 
     return (
@@ -80,43 +59,30 @@ export default function UsuariosPage() {
 
                 <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset() }}>
                     <DialogTrigger asChild>
-                        <Button>+ Nuevo usuario</Button>
+                        <Button className="w-full sm:w-auto">+ Nuevo usuario</Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                         <DialogHeader>
                             <DialogTitle>Crear usuario</DialogTitle>
                         </DialogHeader>
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
-
                             <div className="space-y-1">
                                 <Label>Username *</Label>
-                                <Input
-                                    {...register('username')}
-                                    placeholder="juan123"
-                                />
+                                <Input {...register('username')} placeholder="juan123" />
                                 {errors.username && (
                                     <p className="text-xs text-red-500">{errors.username.message}</p>
                                 )}
                             </div>
-
                             <div className="space-y-1">
                                 <Label>Contraseña *</Label>
-                                <Input
-                                    {...register('password')}
-                                    type="password"
-                                    placeholder="••••••••"
-                                />
+                                <Input {...register('password')} type="password" placeholder="••••••••" />
                                 {errors.password && (
                                     <p className="text-xs text-red-500">{errors.password.message}</p>
                                 )}
                             </div>
-
                             <div className="flex justify-end gap-2 pt-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => { setOpen(false); reset() }}
-                                >
+                                <Button type="button" variant="outline"
+                                    onClick={() => { setOpen(false); reset() }}>
                                     Cancelar
                                 </Button>
                                 <Button type="submit" disabled={isSubmitting}>
@@ -155,13 +121,13 @@ export default function UsuariosPage() {
                                     <div className="flex gap-2 justify-end">
                                         {!u.roles.includes('ADMIN') && (
                                             <Button size="sm" variant="outline"
-                                                onClick={() => handleAssignRole(u.id, 1, 'ADMIN')}>
+                                                onClick={() => asignarRol(u.id, 1, 'ADMIN')}>
                                                 + ADMIN
                                             </Button>
                                         )}
                                         {!u.roles.includes('CLIENTE') && (
                                             <Button size="sm" variant="outline"
-                                                onClick={() => handleAssignRole(u.id, 2, 'CLIENTE')}>
+                                                onClick={() => asignarRol(u.id, 2, 'CLIENTE')}>
                                                 + CLIENTE
                                             </Button>
                                         )}
@@ -169,7 +135,7 @@ export default function UsuariosPage() {
                                 </TableCell>
                             </TableRow>
                         ))}
-                        {usuarios?.length === 0 && (
+                        {!isLoading && usuarios?.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={3} className="text-center text-slate-400 py-8">
                                     No hay usuarios registrados
