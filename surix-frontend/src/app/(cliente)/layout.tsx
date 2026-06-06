@@ -81,6 +81,12 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                             Catálogo
                         </button>
                         <button
+                            onClick={() => router.push('/perfil')}
+                            className="text-sm text-slate-500 hover:text-slate-800"
+                        >
+                            {usuario?.username}
+                        </button>
+                        <button
                             onClick={handleLogout}
                             className="text-sm text-slate-500 hover:text-slate-800 transition-colors"
                         >

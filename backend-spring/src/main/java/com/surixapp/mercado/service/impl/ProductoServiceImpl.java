@@ -66,25 +66,32 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public ProductoResponse update(Long id, com.surixapp.mercado.dto.UpdateProductoRequest request) {
-        Producto existing = productoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Producto " + id + " not found"));
+    public ProductoResponse update(Long id, CreateProductoRequest request) {
+    Producto p = productoRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Producto " + id + " not found"));
+    p.setNombre(request.getNombre());
+    p.setPrecio(request.getPrecio());
+    p.setDescripcion(request.getDescripcion());
+    p.setStock(request.getStock() != null ? request.getStock() : 0);
 
-        existing.setNombre(request.getNombre());
-        existing.setPrecio(request.getPrecio());
-        existing.setDescripcion(request.getDescripcion());
-        existing.setStock(request.getStock());
-
+    if (request.getEstanteId() != null) {
         Estante estante = estanteRepository.findById(request.getEstanteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Estante not found"));
+        p.setEstante(estante);
+    } else {
+        p.setEstante(null);
+    }
+
+    if (request.getCategoriaId() != null) {
         Categoria categoria = categoriaRepository.findById(request.getCategoriaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria not found"));
-
-        existing.setEstante(estante);
-        existing.setCategoria(categoria);
-
-        return toResponse(productoRepository.save(existing));
+        p.setCategoria(categoria);
+    } else {
+        p.setCategoria(null);
     }
+
+    return toResponse(productoRepository.save(p));
+}
 
     @Override
     public void delete(Long id) {

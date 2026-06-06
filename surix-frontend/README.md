@@ -31,8 +31,8 @@ src/
 |   |       |__page.tsx
 |   |   
 │   ├── (admin)/                      # Rutas protegidas — rol ADMIN
-│   │   ├── layout.tsx
-|   |   |__admin          # verifica rol antes de renderizar
+│   │   ├── layout.tsx                  # verifica rol antes de renderizar
+|   |   |__admin          
 │   │      ├── productos/
 │   │      │   └── page.tsx
 │   │      ├── estantes/
@@ -46,9 +46,13 @@ src/
 │   |    ├── lista/
 │   |    │   └── page.tsx              # lista activa del cliente
 │   |    └── lista/[id]/
-│   |        └── page.tsx              # items con ruta sugerida
+│   |    |    └── page.tsx              # items con ruta sugerida
+|   |    |__ perfil
+|   |        |__page.tsx              
 │   |__catalogo
-|      |__page.tsx
+|   |   |__page.tsx
+|   |
+|   |__ page.tsx                        #Landing page de presentación
 |
 ├── components/
 │   ├── ui/                           # componentes genéricos (shadcn/ui) puedes instalarlos
@@ -65,15 +69,22 @@ src/
 |   |   
 │   ├── estantes/
 │   │   ├── EstanteForm.tsx
-│   │   └── EstanteMap.tsx            # mapa visual del supermercado
+│   │   └── EstanteMap.tsx          # mapa visual del supermercado
+|   |   |__ EstanteBlock.tsx            
 │   ├── lista/
 │   │   ├── ItemLista.tsx             # item con checkbox recogido
 │   │   ├── RutaSugerida.tsx          # items ordenados por orden_logico
 │   │   └── ListaActions.tsx          # botones agregar, finalizar
 │   └── layout/
-│       ├── Navbar.tsx
-│       └── Sidebar.tsx
-|
+│   |    ├── Navbar.tsx
+│   |    └── Sidebar.tsx
+|   |__ admin/
+|   |    |__ EditModal.tsx          # Modal base reutilizable
+|   |
+|   | __ categorias/
+|   |    |__ CategoriaForm.tsx     
+|   |__ usuarios
+|        |__UsuarioForm.tsx  
 |
 ├── api/                              # capa de comunicación con el backend
 │   ├── client.ts                     # fetch base con URL y headers
@@ -93,6 +104,7 @@ src/
 |   |__ useEstantes.ts
 |   |__ useProductosAdmin.ts
 |   |__ useUsuarios.ts
+|   |__ useListaDetalle.ts
 │
 ├── store/                            # estado global con Zustand
 │   ├── authStore.ts                  # usuario logueado + rol

@@ -1,7 +1,7 @@
 import useSWR from 'swr'
 import { toast } from 'sonner'
 import { estantesApi } from '@/api/estantes'
-import { Estante } from '@/types/estante'
+import { Estante, EstanteFormData, EstanteUpdateData } from '@/types/estante'
 
 export function useEstantes() {
     const { data: estantes, mutate, isLoading } = useSWR(
@@ -13,14 +13,14 @@ export function useEstantes() {
         ? Math.max(...estantes.map(e => e.ordenLogico)) + 1
         : 1
 
-    const crear = async (data: Omit<Estante, 'id'>) => {
+    const crear = async (data: EstanteFormData) => {
         try {
             await estantesApi.create(data)
-            mutate()
+            await mutate()
             toast.success('Estante creado exitosamente')
             return true
-        } catch (err: any) {
-            toast.error(err.message ?? 'Error al crear el estante')
+        } catch (err: unknown) {
+            toast.error(err instanceof Error ? err.message : 'Error al crear el estante')
             return false
         }
     }
@@ -33,10 +33,10 @@ export function useEstantes() {
                 onClick: async () => {
                     try {
                         await estantesApi.delete(id)
-                        mutate()
+                        await mutate()
                         toast.success('Estante eliminado')
-                    } catch (err: any) {
-                        toast.error(err.message ?? 'Error al eliminar')
+                    } catch (err: unknown) {
+                        toast.error(err instanceof Error ? err.message : 'Error al eliminar')
                     }
                 },
             },
@@ -44,10 +44,23 @@ export function useEstantes() {
         })
     }
 
+    const actualizar = async (id: number, data: EstanteUpdateData) => {
+    try {
+        await estantesApi.update(id, data)
+        await mutate()
+        toast.success('Estante actualizado')
+        return true
+    } catch (err: any) {
+        toast.error(err.message ?? 'Error al actualizar')
+        return false
+    }
+}
+
     return {
         estantes,
         isLoading,
         siguienteOrden,
+        actualizar,
         crear,
         eliminar,
     }

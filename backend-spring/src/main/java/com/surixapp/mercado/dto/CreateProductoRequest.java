@@ -1,8 +1,8 @@
 package com.surixapp.mercado.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 
 public class CreateProductoRequest {
 
@@ -10,13 +10,13 @@ public class CreateProductoRequest {
     private String nombre;
 
     @NotNull(message = "precio is required")
-    @Positive(message = "precio must be greater than 0")
+    @Min(value = 0, message = "precio cannot be negative")
     private Double precio;
 
     private String descripcion;
 
     @NotNull(message = "stock is required")
-    @Positive(message = "stock must be greater than 0")
+    @Min(value = 0, message = "stock cannot be negative")
     private Integer stock;
 
     @NotNull(message = "estanteId is required")

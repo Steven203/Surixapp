@@ -67,7 +67,6 @@ src/main/java/com/surixapp/mercado/
 ├── controller/
 │   ├── CategoriaController.java
 │   ├── EstanteController.java
-│   ├── ItemListaController.java
 │   ├── ListaCompraController.java
 │   ├── ProductoController.java
 │   ├── RoleController.java
@@ -87,6 +86,7 @@ src/main/java/com/surixapp/mercado/
 │   ├── BusinessException.java
 │   ├── GlobalExceptionHandler.java
 │   └── ResourceNotFoundException.java
+|   |__ ApiError.java
 ├── repository/
 └── service/
     └── impl/
@@ -145,6 +145,7 @@ items_lista ──── ManyToOne ──── productos ──── ManyToOne
 | PUT | `/api/usuarios/{id}` | `{ "username", "password" }` | Editar usuario |
 | DELETE | `/api/usuarios/{id}` | — | Eliminar usuario |
 | POST | `/api/usuarios/{id}/roles/{roleId}` | — | Asignar rol |
+| DELETE | `/api/usuarios/{id}/roles/{roleId}` | — | quitar rol |
 
 ### Estantes — `/api/estantes`
 
@@ -186,9 +187,11 @@ items_lista ──── ManyToOne ──── productos ──── ManyToOne
 | PATCH | `/api/listas/{id}/finalizar` | `?forzar=false` | Finalizar lista |
 | POST | `/api/listas/{id}/items` | `{ "productoId", "cantidad" }` | Agregar item |
 | GET | `/api/listas/{id}/items` | — | Items ordenados por ruta |
-| PUT | `/api/listas/items/{itemId}` | `{ "cantidad" }` | Editar cantidad |
+| PUT | `/api/listas/items/{itemId}` | `{ "itemId", "cantidad" }` | Editar cantidad |
 | PATCH | `/api/listas/items/{itemId}/recoger` | — | Marcar como recogido |
+| PATCH | `/api/listas/items/{itemId}/devolver` | — | Desmarcar como recogido |
 | DELETE | `/api/listas/items/{itemId}` | — | Eliminar item |
+| DELETE | `/api/listas/{Id}` | — | Eliminar lista |
 
 ---
 

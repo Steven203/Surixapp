@@ -63,7 +63,7 @@ public class ListaCompraController {
         return itemService.marcarRecogido(itemId);
     }
 
-    @PatchMapping("/items/{itemId}/desrecoger")
+    @PatchMapping("/items/{itemId}/devolver")
     public ItemListaResponse desmarcarRecogido(@PathVariable Long itemId) {
         return itemService.desmarcarRecogido(itemId);
     }

@@ -15,3 +15,12 @@ export type ListaCompra = {
     estado: 'EN_PROCESO' | 'FINALIZADA'
     items: ItemLista[]
 }
+
+export type CreateItemData = {
+    productoId: number
+    cantidad: number
+}
+
+export type UpdateItemData = {
+    cantidad: number
+}

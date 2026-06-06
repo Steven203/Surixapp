@@ -50,4 +50,10 @@ public class UsuarioController {
             @PathVariable Long roleId) {
         return service.assignRole(usuarioId, roleId);
     }
+
+    @DeleteMapping("/{usuarioId}/roles/{roleId}")
+    public UsuarioResponse removeRole(@PathVariable Long usuarioId,
+            @PathVariable Long roleId) {
+        return service.removeRole(usuarioId, roleId);
+    }
 }

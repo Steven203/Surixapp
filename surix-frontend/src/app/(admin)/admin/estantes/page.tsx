@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { useEstantes } from '@/hooks/useEstantes'
-import { Estante } from '@/types/estante'
+import { Estante, EstanteFormData, EstanteUpdateData } from '@/types/estante'
 import { Button } from '@/components/ui/button'
 import EstanteForm from '@/components/estantes/EstanteForm'
+import EditModal from '@/components/admin/EditModal'
 import {
     Dialog, DialogContent, DialogHeader,
     DialogTitle, DialogTrigger,
@@ -15,12 +16,20 @@ import {
 } from '@/components/ui/table'
 
 export default function EstantesPage() {
-    const { estantes, isLoading, siguienteOrden, crear, eliminar } = useEstantes()
-    const [open, setOpen] = useState(false)
+    const { estantes, isLoading, siguienteOrden, crear, actualizar, eliminar } = useEstantes()
+    const [openCrear, setOpenCrear] = useState(false)
+    const [editando, setEditando] = useState<Estante | null>(null)
 
-    const handleSubmit = async (data: any) => {
+    const handleCrear = async (data: EstanteFormData) => {
         const ok = await crear(data)
-        if (ok) setOpen(false)
+        if (ok) setOpenCrear(false)
+        return ok
+    }
+
+    const handleActualizar = async (data: EstanteUpdateData) => {
+        if (!editando) return false
+        const ok = await actualizar(editando.id, data)
+        if (ok) setEditando(null)
         return ok
     }
 
@@ -35,7 +44,7 @@ export default function EstantesPage() {
                     </p>
                 </div>
 
-                <Dialog open={open} onOpenChange={setOpen}>
+                <Dialog open={openCrear} onOpenChange={setOpenCrear}>
                     <DialogTrigger asChild>
                         <Button className="w-full sm:w-auto">+ Nuevo estante</Button>
                     </DialogTrigger>
@@ -45,12 +54,33 @@ export default function EstantesPage() {
                         </DialogHeader>
                         <EstanteForm
                             siguienteOrden={siguienteOrden}
-                            onSubmit={handleSubmit}
-                            onCancel={() => setOpen(false)}
+                            onSubmit={handleCrear}
+                            onCancel={() => setOpenCrear(false)}
                         />
                     </DialogContent>
                 </Dialog>
             </div>
+
+            {/* modal editar */}
+            <EditModal
+                open={!!editando}
+                onClose={() => setEditando(null)}
+                titulo="Editar estante"
+            >
+                {editando && (
+                    <EstanteForm
+                        siguienteOrden={editando.ordenLogico}
+                        defaultValues={{
+                            nombre: editando.nombre,
+                            coordX: editando.coordX,
+                            coordY: editando.coordY,
+                            ordenLogico: editando.ordenLogico,
+                        }}
+                        onSubmit={handleActualizar}
+                        onCancel={() => setEditando(null)}
+                    />
+                )}
+            </EditModal>
 
             <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
                 <Table>
@@ -71,13 +101,22 @@ export default function EstantesPage() {
                                 <TableCell className="hidden sm:table-cell">{e.coordY}</TableCell>
                                 <TableCell>#{e.ordenLogico}</TableCell>
                                 <TableCell className="text-right">
-                                    <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={() => eliminar(e.id, e.nombre)}
-                                    >
-                                        Eliminar
-                                    </Button>
+                                    <div className="flex gap-2 justify-end">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setEditando(e)}
+                                        >
+                                            Editar
+                                        </Button>
+                                        <Button
+                                            variant="destructive"
+                                            size="sm"
+                                            onClick={() => eliminar(e.id, e.nombre)}
+                                        >
+                                            Eliminar
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}

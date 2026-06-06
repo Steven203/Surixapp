@@ -40,7 +40,7 @@ export const listasApi = {
         }),
 
     desmarcarRecogido: (itemId: number) =>
-    apiFetch<ItemLista>(`/api/listas/items/${itemId}/desrecoger`, {
+    apiFetch<ItemLista>(`/api/listas/items/${itemId}/devolver`, {
         method: 'PATCH',
     }),
 

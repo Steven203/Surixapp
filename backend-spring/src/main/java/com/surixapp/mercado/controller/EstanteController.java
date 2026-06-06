@@ -35,7 +35,7 @@ public class EstanteController {
     }
 
     @PutMapping("/{id}")
-    public EstanteResponse update(@PathVariable Long id, @Valid @RequestBody UpdateEstanteRequest request) {
+    public EstanteResponse update(@PathVariable Long id, @Valid @RequestBody CreateEstanteRequest request) {
         return service.update(id, request);
     }
 

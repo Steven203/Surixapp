@@ -11,7 +11,7 @@ public interface ProductoService {
 
     ProductoResponse getById(Long id);
 
-    ProductoResponse update(Long id, UpdateProductoRequest request);
+    ProductoResponse update(Long id, CreateProductoRequest request);
 
     void delete(Long id);
 }

@@ -46,7 +46,7 @@ public class EstanteServiceImpl implements EstanteService {
     }
 
     @Override
-    public EstanteResponse update(Long id, com.surixapp.mercado.dto.UpdateEstanteRequest request) {
+    public EstanteResponse update(Long id, com.surixapp.mercado.dto.CreateEstanteRequest request) {
         Estante existing = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Estante " + id + " not found"));
 

@@ -10,7 +10,7 @@ public interface EstanteService {
 
     EstanteResponse getById(Long id);
 
-    EstanteResponse update(Long id, UpdateEstanteRequest request);
+    EstanteResponse update(Long id, CreateEstanteRequest request);
 
     void delete(Long id);
 }

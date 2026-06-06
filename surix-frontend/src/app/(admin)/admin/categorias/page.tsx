@@ -1,14 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { useCategorias } from '@/hooks/useCategorias'
-import { Categoria } from '@/types/categoria'
+import { Categoria, CategoriaFormData, CategoriaUpdateData } from '@/types/categoria'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import CategoriaForm from '@/components/categorias/CategoriaForm'
+import EditModal from '@/components/admin/EditModal'
 import {
     Dialog, DialogContent, DialogHeader,
     DialogTitle, DialogTrigger,
@@ -18,27 +15,22 @@ import {
     TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 
-const schema = z.object({
-    nombre: z.string().min(1, 'El nombre es obligatorio').max(100, 'Máximo 100 caracteres'),
-    descripcion: z.string().optional(),
-})
-
-type FormData = z.infer<typeof schema>
-
 export default function CategoriasPage() {
-    const { categorias, isLoading, crear, eliminar } = useCategorias()
-    const [open, setOpen] = useState(false)
+    const { categorias, isLoading, crear, actualizar, eliminar } = useCategorias()
+    const [openCrear, setOpenCrear] = useState(false)
+    const [editando, setEditando] = useState<Categoria | null>(null)
 
-    const {
-        register,
-        handleSubmit,
-        reset,
-        formState: { errors, isSubmitting },
-    } = useForm<FormData>({ resolver: zodResolver(schema) })
-
-    const onSubmit = async (data: FormData) => {
+    const handleCrear = async (data: CategoriaFormData) => {
         const ok = await crear(data)
-        if (ok) { setOpen(false); reset() }
+        if (ok) setOpenCrear(false)
+        return ok
+    }
+
+    const handleActualizar = async (data: CategoriaUpdateData) => {
+        if (!editando) return false
+        const ok = await actualizar(editando.id, data)
+        if (ok) setEditando(null)
+        return ok
     }
 
     return (
@@ -51,7 +43,7 @@ export default function CategoriasPage() {
                     </p>
                 </div>
 
-                <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset() }}>
+                <Dialog open={openCrear} onOpenChange={setOpenCrear}>
                     <DialogTrigger asChild>
                         <Button className="w-full sm:w-auto">+ Nueva categoría</Button>
                     </DialogTrigger>
@@ -59,31 +51,31 @@ export default function CategoriasPage() {
                         <DialogHeader>
                             <DialogTitle>Crear categoría</DialogTitle>
                         </DialogHeader>
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
-                            <div className="space-y-1">
-                                <Label>Nombre *</Label>
-                                <Input {...register('nombre')} placeholder="Lácteos" />
-                                {errors.nombre && (
-                                    <p className="text-xs text-red-500">{errors.nombre.message}</p>
-                                )}
-                            </div>
-                            <div className="space-y-1">
-                                <Label>Descripción</Label>
-                                <Input {...register('descripcion')} placeholder="Opcional" />
-                            </div>
-                            <div className="flex justify-end gap-2 pt-2">
-                                <Button type="button" variant="outline"
-                                    onClick={() => { setOpen(false); reset() }}>
-                                    Cancelar
-                                </Button>
-                                <Button type="submit" disabled={isSubmitting}>
-                                    {isSubmitting ? 'Guardando...' : 'Guardar'}
-                                </Button>
-                            </div>
-                        </form>
+                        <CategoriaForm
+                            onSubmit={handleCrear}
+                            onCancel={() => setOpenCrear(false)}
+                        />
                     </DialogContent>
                 </Dialog>
             </div>
+
+            {/* modal editar */}
+            <EditModal
+                open={!!editando}
+                onClose={() => setEditando(null)}
+                titulo="Editar categoría"
+            >
+                {editando && (
+                    <CategoriaForm
+                        defaultValues={{
+                            nombre: editando.nombre,
+                            descripcion: editando.descripcion ?? '',
+                        }}
+                        onSubmit={handleActualizar}
+                        onCancel={() => setEditando(null)}
+                    />
+                )}
+            </EditModal>
 
             <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
                 <Table>
@@ -102,10 +94,22 @@ export default function CategoriasPage() {
                                     {c.descripcion ?? '—'}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="destructive" size="sm"
-                                        onClick={() => eliminar(c.id, c.nombre)}>
-                                        Eliminar
-                                    </Button>
+                                    <div className="flex gap-2 justify-end">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setEditando(c)}
+                                        >
+                                            Editar
+                                        </Button>
+                                        <Button
+                                            variant="destructive"
+                                            size="sm"
+                                            onClick={() => eliminar(c.id, c.nombre)}
+                                        >
+                                            Eliminar
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}

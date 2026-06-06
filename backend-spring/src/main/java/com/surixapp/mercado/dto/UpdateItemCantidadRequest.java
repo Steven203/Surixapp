@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public class UpdateItemCantidadRequest {
+
     @NotNull(message = "cantidad is required")
     @Positive(message = "cantidad must be greater than 0")
     private Integer cantidad;

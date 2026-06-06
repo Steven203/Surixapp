@@ -30,7 +30,7 @@ public class CategoriaController {
     public CategoriaResponse getById(@PathVariable Long id) { return service.getById(id); }
 
     @PutMapping("/{id}")
-    public CategoriaResponse update(@PathVariable Long id, @Valid @RequestBody UpdateCategoriaRequest request) {
+    public CategoriaResponse update(@PathVariable Long id, @Valid @RequestBody CreateCategoriaRequest request) {
         return service.update(id, request);
     }
 

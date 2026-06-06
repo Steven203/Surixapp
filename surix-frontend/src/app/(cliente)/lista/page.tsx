@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLista } from '@/hooks/useLista'
-import { useRutaSugerida } from '@/hooks/useRutaSugerida'
+import { useEstantes } from '@/hooks/useEstantes'
 import { useListaStore } from '@/store/listaStore'
 import { ListaCompra } from '@/types/lista'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import RutaSugerida from '@/components/lista/RutaSugerida'
 import ListaActions from '@/components/lista/ListaActions'
+import EstanteMap from '@/components/estantes/EstanteMap'
 
 export default function ListaPage() {
     const router = useRouter()
@@ -21,23 +22,27 @@ export default function ListaPage() {
         listaActiva,
         listasFinalizadas,
         items,
+        itemsOrdenados,
         isLoading,
         itemsRecogidos,
         totalItems,
         progreso,
         totalEstimado,
+        nombreEstanteActivo,
+        estantesConProductos,
+        estantesCompletados,
         crearLista,
         marcarRecogido,
         desmarcarRecogido,
         eliminarItem,
         actualizarCantidad,
+        eliminarLista,
         finalizar,
         sincronizarItemsLocales,
     } = useLista()
 
-    const itemsOrdenados = useRutaSugerida(items)
+    const { estantes } = useEstantes()
 
-    // sincronizar items locales cuando hay lista activa
     useEffect(() => {
         if (!listaActiva || sincronizando) return
         if (itemsLocales.length === 0) return
@@ -79,12 +84,14 @@ export default function ListaPage() {
                                 No tienes una lista activa
                             </h2>
                             <p className="text-sm text-slate-400 mt-1">
-                                Crea una lista y agrega productos desde el catálogo
+                                Agrega productos desde el catálogo para empezar
                             </p>
                         </div>
-                        <Button onClick={() => router.push('/catalogo')}>
-                            + Ir al catálogo para empezar
-                        </Button>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                            <Button onClick={() => router.push('/catalogo')}>
+                                Ir al catálogo
+                            </Button>
+                        </div>
                     </div>
 
                     {/* historial */}
@@ -139,6 +146,7 @@ export default function ListaPage() {
                         </div>
                     )}
 
+                    {/* acciones — progreso y finalizar */}
                     <ListaActions
                         progreso={progreso}
                         itemsRecogidos={itemsRecogidos}
@@ -149,11 +157,28 @@ export default function ListaPage() {
                         onFinalizar={handleFinalizar}
                     />
 
+                    {/* mapa del supermercado */}
+                    {estantes && estantes.length > 0 && items && (
+                        <div className="space-y-2">
+                            <h2 className="font-semibold text-slate-700">
+                                🗺️ Mapa del supermercado
+                            </h2>
+                            <EstanteMap
+                                estantes={estantes}
+                                items={items}
+                                nombreEstanteActivo={nombreEstanteActivo}
+                                estantesConProductos={estantesConProductos}
+                                estantesCompletados={estantesCompletados}
+                            />
+                        </div>
+                    )}
+
+                    {/* ruta sugerida */}
                     <RutaSugerida
                         items={itemsOrdenados}
                         onMarcar={marcarRecogido}
-                        onEliminar={eliminarItem}
                         onDesmarcar={desmarcarRecogido}
+                        onEliminar={eliminarItem}
                         onActualizarCantidad={actualizarCantidad}
                     />
 

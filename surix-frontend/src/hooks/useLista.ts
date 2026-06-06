@@ -1,15 +1,15 @@
 import useSWR from 'swr'
 import { toast } from 'sonner'
+import { mutate as mutateGlobal } from 'swr'
 import { listasApi } from '@/api/listas'
 import { useAuthStore } from '@/store/authStore'
 import { useListaStore } from '@/store/listaStore'
 import { ItemLista } from '@/types/lista'
-import { mutate as mutateGlobal } from 'swr'
+import { useRutaSugerida } from './useRutaSugerida'
 
 export function useLista() {
     const usuario = useAuthStore(s => s.usuario)
     const { itemsLocales, limpiarLocales } = useListaStore()
-
 
     const {
         data: listas,
@@ -31,6 +31,26 @@ export function useLista() {
         () => listasApi.getItems(listaActiva!.id)
     )
 
+    // ruta sugerida ordenada por orden_logico
+    const itemsOrdenados = useRutaSugerida(items)
+
+    // cálculos para el mapa
+    const nombreEstanteActivo = itemsOrdenados.find(
+        i => !i.recogido
+    )?.estanteNombre ?? null
+
+    const estantesConProductos = new Set(
+        items?.map(i => i.estanteNombre).filter((n): n is string => !!n)
+    )
+
+    const estantesCompletados = new Set(
+        Array.from(estantesConProductos).filter(nombre => {
+            const itemsDelEstante = items?.filter(i => i.estanteNombre === nombre) ?? []
+            return itemsDelEstante.length > 0 && itemsDelEstante.every(i => i.recogido)
+        })
+    )
+
+    // métricas
     const itemsRecogidos = items?.filter(i => i.recogido).length ?? 0
     const totalItems = items?.length ?? 0
     const progreso = totalItems > 0
@@ -87,7 +107,7 @@ export function useLista() {
                     }
                 },
             },
-            cancel: { label: 'Cancelar', onClick: () => { } },
+            cancel: { label: 'Cancelar', onClick: () => {} },
         })
     }
 
@@ -107,6 +127,20 @@ export function useLista() {
         }
     }
 
+    const eliminarLista = async () => {
+        if (!listaActiva) return
+        try {
+            await listasApi.delete(listaActiva.id)
+            await mutarListas()
+            await mutarItems()
+            await mutateGlobal(`/api/listas/${listaActiva.id}/items`, [])
+            if (usuario)
+                await mutateGlobal(`/api/listas/usuario/${usuario.id}`)
+        } catch (err: any) {
+            toast.error(err.message)
+        }
+    }
+
     const finalizar = async (forzar = false) => {
         if (!listaActiva) return
 
@@ -120,7 +154,7 @@ export function useLista() {
                         toast.success('Lista eliminada')
                     },
                 },
-                cancel: { label: 'Cancelar', onClick: () => { } },
+                cancel: { label: 'Cancelar', onClick: () => {} },
             })
             return
         }
@@ -135,7 +169,7 @@ export function useLista() {
                         toast.success('Lista eliminada')
                     },
                 },
-                cancel: { label: 'Seguir comprando', onClick: () => { } },
+                cancel: { label: 'Seguir comprando', onClick: () => {} },
             })
             return
         }
@@ -148,7 +182,7 @@ export function useLista() {
                     label: 'Finalizar igual',
                     onClick: () => finalizar(true),
                 },
-                cancel: { label: 'Seguir comprando', onClick: () => { } },
+                cancel: { label: 'Seguir comprando', onClick: () => {} },
             })
             return
         }
@@ -167,7 +201,11 @@ export function useLista() {
     }
 
     const sincronizarItemsLocales = async () => {
-        if (!listaActiva || itemsLocales.length === 0) return
+        if (!listaActiva) return
+        if (itemsLocales.length === 0) {
+            limpiarLocales()
+            return
+        }
         let agregados = 0
         for (const item of itemsLocales) {
             try {
@@ -181,37 +219,25 @@ export function useLista() {
             toast.success(`${agregados} producto${agregados > 1 ? 's' : ''} sincronizado${agregados > 1 ? 's' : ''}`)
     }
 
-    const eliminarLista = async () => {
-        if (!listaActiva) return
-        try {
-            await listasApi.delete(listaActiva.id)
-            await mutarListas()
-            await mutarItems()
-            await mutateGlobal(`/api/listas/${listaActiva.id}/items`, [])
-            if (usuario)
-                await mutateGlobal(`/api/listas/usuario/${usuario.id}`)
-        } catch (err: any) {
-            toast.error(err.message)
-        }
-    }
-
-
-
     return {
         listaActiva,
         listasFinalizadas,
         items,
+        itemsOrdenados,
         isLoading,
         itemsRecogidos,
         totalItems,
         progreso,
         totalEstimado,
+        nombreEstanteActivo,
+        estantesConProductos,
+        estantesCompletados,
         crearLista,
         marcarRecogido,
         desmarcarRecogido,
         eliminarItem,
-        eliminarLista,
         actualizarCantidad,
+        eliminarLista,
         finalizar,
         sincronizarItemsLocales,
         mutarItems,

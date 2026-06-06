@@ -41,7 +41,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
     @Override
-    public CategoriaResponse update(Long id, com.surixapp.mercado.dto.UpdateCategoriaRequest request) {
+    public CategoriaResponse update(Long id, com.surixapp.mercado.dto.CreateCategoriaRequest request) {
         Categoria existing = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria " + id + " not found"));
 

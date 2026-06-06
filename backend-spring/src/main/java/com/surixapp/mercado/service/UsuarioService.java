@@ -9,6 +9,8 @@ public interface UsuarioService {
 
     UsuarioResponse assignRole(Long usuarioId, Long roleId);
 
+    UsuarioResponse removeRole(Long usuarioId, Long roleId);
+
     List<UsuarioResponse> list();
 
     UsuarioResponse getById(Long id);
@@ -16,5 +18,5 @@ public interface UsuarioService {
     UsuarioResponse update(Long id, UpdateUsuarioRequest request);
 
     void delete(Long id);
+    
 }
-
