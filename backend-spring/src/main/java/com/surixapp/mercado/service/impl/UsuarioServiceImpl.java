@@ -3,10 +3,12 @@ package com.surixapp.mercado.service.impl;
 import com.surixapp.mercado.dto.CreateUsuarioRequest;
 import com.surixapp.mercado.dto.UpdateUsuarioRequest;
 import com.surixapp.mercado.dto.UsuarioResponse;
+import com.surixapp.mercado.entity.ListaCompra;
 import com.surixapp.mercado.entity.Role;
 import com.surixapp.mercado.entity.Usuario;
 import com.surixapp.mercado.exception.BusinessException;
 import com.surixapp.mercado.exception.ResourceNotFoundException;
+import com.surixapp.mercado.repository.ListaCompraRepository;
 import com.surixapp.mercado.repository.RoleRepository;
 import com.surixapp.mercado.repository.UsuarioRepository;
 import com.surixapp.mercado.service.UsuarioService;
@@ -23,13 +25,16 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ListaCompraRepository listaCompraRepository;
 
     public UsuarioServiceImpl(UsuarioRepository usuarioRepository,
-                              RoleRepository roleRepository,
-                              PasswordEncoder passwordEncoder) {
+            RoleRepository roleRepository,
+            PasswordEncoder passwordEncoder,
+            ListaCompraRepository listaCompraRepository) {
         this.usuarioRepository = usuarioRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.listaCompraRepository = listaCompraRepository;
     }
 
     @Override
@@ -86,10 +91,18 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
-        if (!usuarioRepository.existsById(id)) {
+        if (!usuarioRepository.existsById(id))
             throw new ResourceNotFoundException("Usuario " + id + " not found");
-        }
+
+        boolean tieneListaActiva = listaCompraRepository
+                .existsByUsuarioIdAndEstado(id, ListaCompra.Estado.EN_PROCESO);
+
+        if (tieneListaActiva)
+            throw new BusinessException(
+                    "No puedes eliminar este usuario porque tiene una lista de compras activa");
+
         usuarioRepository.deleteById(id);
     }
 

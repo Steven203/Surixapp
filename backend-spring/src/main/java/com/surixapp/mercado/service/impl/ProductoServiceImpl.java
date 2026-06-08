@@ -67,43 +67,47 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public ProductoResponse update(Long id, CreateProductoRequest request) {
-    Producto p = productoRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Producto " + id + " not found"));
-    p.setNombre(request.getNombre());
-    p.setPrecio(request.getPrecio());
-    p.setDescripcion(request.getDescripcion());
-    p.setStock(request.getStock() != null ? request.getStock() : 0);
+        Producto p = productoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Producto " + id + " not found"));
+        p.setNombre(request.getNombre());
+        p.setPrecio(request.getPrecio());
+        p.setDescripcion(request.getDescripcion());
+        p.setStock(request.getStock() != null ? request.getStock() : 0);
 
-    if (request.getEstanteId() != null) {
-        Estante estante = estanteRepository.findById(request.getEstanteId())
-                .orElseThrow(() -> new ResourceNotFoundException("Estante not found"));
-        p.setEstante(estante);
-    } else {
-        p.setEstante(null);
+        if (request.getEstanteId() != null) {
+            Estante estante = estanteRepository.findById(request.getEstanteId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Estante not found"));
+            p.setEstante(estante);
+        } else {
+            p.setEstante(null);
+        }
+
+        if (request.getCategoriaId() != null) {
+            Categoria categoria = categoriaRepository.findById(request.getCategoriaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Categoria not found"));
+            p.setCategoria(categoria);
+        } else {
+            p.setCategoria(null);
+        }
+
+        return toResponse(productoRepository.save(p));
     }
-
-    if (request.getCategoriaId() != null) {
-        Categoria categoria = categoriaRepository.findById(request.getCategoriaId())
-                .orElseThrow(() -> new ResourceNotFoundException("Categoria not found"));
-        p.setCategoria(categoria);
-    } else {
-        p.setCategoria(null);
-    }
-
-    return toResponse(productoRepository.save(p));
-}
 
     @Override
     public void delete(Long id) {
         if (!productoRepository.existsById(id))
             throw new ResourceNotFoundException("Producto " + id + " not found");
 
-        // verifica si el producto está en alguna lista antes de borrar
-        boolean estaEnLista = itemListaRepository.existsByProductoId(id);
-        if (estaEnLista)
-            throw new BusinessException(
-                    "No puedes eliminar este producto porque está en una o más listas de compras");
+        // solo bloquear si está en lista EN_PROCESO
+        boolean estaEnListaActiva = itemListaRepository
+                .existsByProductoIdAndListaEstado(id, ListaCompra.Estado.EN_PROCESO);
 
+        if (estaEnListaActiva)
+            throw new BusinessException(
+                    "No puedes eliminar este producto porque un cliente lo tiene en su lista activa");
+
+        // si no está en lista activa — borrar sin problema
+        // el SET NULL de la FK se encarga de los items en listas finalizadas
         productoRepository.deleteById(id);
     }
 

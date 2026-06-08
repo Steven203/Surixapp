@@ -1,14 +1,21 @@
 package com.surixapp.mercado.service.impl;
 
-import com.surixapp.mercado.dto.*;
-import com.surixapp.mercado.entity.*;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.surixapp.mercado.dto.CreateItemListaRequest;
+import com.surixapp.mercado.dto.ItemListaResponse;
+import com.surixapp.mercado.entity.ItemLista;
+import com.surixapp.mercado.entity.ListaCompra;
+import com.surixapp.mercado.entity.Producto;
 import com.surixapp.mercado.exception.BusinessException;
 import com.surixapp.mercado.exception.ResourceNotFoundException;
-import com.surixapp.mercado.repository.*;
+import com.surixapp.mercado.repository.ItemListaRepository;
+import com.surixapp.mercado.repository.ListaCompraRepository;
+import com.surixapp.mercado.repository.ProductoRepository;
 import com.surixapp.mercado.service.ItemListaService;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
 
 @Service
 @Transactional
@@ -19,8 +26,8 @@ public class ItemListaServiceImpl implements ItemListaService {
     private final ProductoRepository productoRepository;
 
     public ItemListaServiceImpl(ItemListaRepository itemRepository,
-            ListaCompraRepository listaRepository,
-            ProductoRepository productoRepository) {
+                                ListaCompraRepository listaRepository,
+                                ProductoRepository productoRepository) {
         this.itemRepository = itemRepository;
         this.listaRepository = listaRepository;
         this.productoRepository = productoRepository;
@@ -31,52 +38,57 @@ public class ItemListaServiceImpl implements ItemListaService {
         ListaCompra lista = listaRepository.findById(listaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lista not found"));
 
-        // validar lista no finalizada
-        if (lista.getEstado() == ListaCompra.Estado.FINALIZADA)
+        if (lista.getEstado() == ListaCompra.Estado.FINALIZADA) {
             throw new BusinessException("No se puede agregar items a una lista finalizada");
+        }
 
         Producto producto = productoRepository.findById(request.getProductoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Producto not found"));
 
-        if (itemRepository.existsByListaIdAndProductoId(listaId, request.getProductoId()))
-            throw new BusinessException(
-                    "El producto '" + producto.getNombre() + "' ya está en la lista");
+        if (itemRepository.existsByListaIdAndProductoId(listaId, request.getProductoId())) {
+            throw new BusinessException("El producto '" + producto.getNombre() + "' ya está en la lista");
+        }
 
-        // validar stock suficiente
-        if (request.getCantidad() > producto.getStock())
+        if (request.getCantidad() > producto.getStock()) {
             throw new BusinessException("Stock insuficiente. Disponible: " + producto.getStock());
+        }
 
         ItemLista item = new ItemLista();
         item.setLista(lista);
         item.setProducto(producto);
         item.setCantidad(request.getCantidad());
         item.setRecogido(false);
-        return toResponse(itemRepository.save(item));
+
+        snapshotFromProducto(item, producto);
+
+        return toHistoricalResponse(itemRepository.save(item));
     }
 
     @Override
     public ItemListaResponse marcarRecogido(Long itemId) {
         ItemLista item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new ResourceNotFoundException("Item " + itemId + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found"));
 
-        // validar lista no finalizada
-        if (item.getLista().getEstado() == ListaCompra.Estado.FINALIZADA)
+        if (item.getLista().getEstado() == ListaCompra.Estado.FINALIZADA) {
             throw new BusinessException("No se puede modificar una lista finalizada");
+        }
 
-        // validar que no esté ya recogido
-        if (item.getRecogido())
+        if (item.getRecogido()) {
             throw new BusinessException("El item ya fue marcado como recogido");
+        }
 
-        // descontar stock
-        Producto producto = item.getProducto();
-        int nuevoStock = producto.getStock() - item.getCantidad();
-        if (nuevoStock < 0)
-            throw new BusinessException("Stock insuficiente para descontar: " + producto.getNombre());
-        producto.setStock(nuevoStock);
-        productoRepository.save(producto);
+        if (item.getProducto() != null) {
+            Producto producto = item.getProducto();
+            int nuevoStock = producto.getStock() - item.getCantidad();
+            if (nuevoStock < 0) {
+                throw new BusinessException("Stock insuficiente: " + producto.getNombre());
+            }
+            producto.setStock(nuevoStock);
+            productoRepository.save(producto);
+        }
 
         item.setRecogido(true);
-        return toResponse(itemRepository.save(item));
+        return toHistoricalResponse(itemRepository.save(item));
     }
 
     @Override
@@ -84,11 +96,16 @@ public class ItemListaServiceImpl implements ItemListaService {
         ItemLista item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found"));
 
-        if (item.getLista().getEstado() == ListaCompra.Estado.FINALIZADA)
+        if (item.getLista().getEstado() == ListaCompra.Estado.FINALIZADA) {
             throw new BusinessException("No se puede modificar una lista finalizada");
+        }
+
+        if (!item.getRecogido()) {
+            throw new BusinessException("El item ya estaba sin recoger");
+        }
 
         item.setRecogido(false);
-        return toResponse(itemRepository.save(item));
+        return toHistoricalResponse(itemRepository.save(item));
     }
 
     @Override
@@ -96,34 +113,24 @@ public class ItemListaServiceImpl implements ItemListaService {
         ItemLista item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found"));
 
-        if (item.getLista().getEstado() == ListaCompra.Estado.FINALIZADA)
+        if (item.getLista().getEstado() == ListaCompra.Estado.FINALIZADA) {
             throw new BusinessException("No se puede modificar una lista finalizada");
+        }
 
-        if (item.getRecogido())
+        if (item.getRecogido()) {
             throw new BusinessException("No se puede modificar un item ya recogido");
+        }
 
-        if (cantidad > item.getProducto().getStock())
+        if (cantidad == null || cantidad <= 0) {
+            throw new BusinessException("La cantidad debe ser mayor a 0");
+        }
+
+        if (item.getProducto() != null && cantidad > item.getProducto().getStock()) {
             throw new BusinessException("Stock insuficiente. Disponible: " + item.getProducto().getStock());
+        }
 
         item.setCantidad(cantidad);
-        return toResponse(itemRepository.save(item));
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ItemListaResponse> listByLista(Long listaId) {
-        return itemRepository.findByListaId(listaId)
-                .stream()
-                .sorted((a, b) -> {
-                    Integer oa = a.getProducto().getEstante() != null
-                            ? a.getProducto().getEstante().getOrdenLogico()
-                            : Integer.MAX_VALUE;
-                    Integer ob = b.getProducto().getEstante() != null
-                            ? b.getProducto().getEstante().getOrdenLogico()
-                            : Integer.MAX_VALUE;
-                    return Integer.compare(oa, ob);
-                })
-                .map(this::toResponse).toList();
+        return toHistoricalResponse(itemRepository.save(item));
     }
 
     @Override
@@ -131,25 +138,115 @@ public class ItemListaServiceImpl implements ItemListaService {
         ItemLista item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Item " + itemId + " not found"));
 
-        // validar lista no finalizada
-        if (item.getLista().getEstado() == ListaCompra.Estado.FINALIZADA)
+        if (item.getLista().getEstado() == ListaCompra.Estado.FINALIZADA) {
             throw new BusinessException("No se puede eliminar items de una lista finalizada");
+        }
 
         itemRepository.deleteById(itemId);
     }
 
-    private ItemListaResponse toResponse(ItemLista item) {
+    @Override
+    @Transactional(readOnly = true)
+    public List<ItemListaResponse> listActiveView(Long listaId) {
+        return itemRepository.findByListaId(listaId)
+                .stream()
+                .sorted(this::compareBySnapshotOrLiveOrder)
+                .map(this::toActiveResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ItemListaResponse> listHistoryView(Long listaId) {
+        return itemRepository.findByListaId(listaId)
+                .stream()
+                .sorted(this::compareBySnapshotOrLiveOrder)
+                .map(this::toHistoricalResponse)
+                .toList();
+    }
+
+    private void snapshotFromProducto(ItemLista item, Producto producto) {
+        item.setSnapshotNombre(producto.getNombre());
+        item.setSnapshotPrecio(producto.getPrecio());
+        item.setSnapshotDescripcion(producto.getDescripcion());
+
+        if (producto.getEstante() != null) {
+            item.setSnapshotEstanteNombre(producto.getEstante().getNombre());
+            item.setSnapshotEstanteOrden(producto.getEstante().getOrdenLogico());
+        }
+
+        if (producto.getCategoria() != null) {
+            item.setSnapshotCategoriaNombre(producto.getCategoria().getNombre());
+        }
+    }
+
+    private ItemListaResponse toActiveResponse(ItemLista item) {
         ItemListaResponse r = new ItemListaResponse();
         r.setId(item.getId());
-        r.setProductoId(item.getProducto().getId());
-        r.setProductoNombre(item.getProducto().getNombre());
-        r.setProductoPrecio(item.getProducto().getPrecio());
         r.setCantidad(item.getCantidad());
         r.setRecogido(item.getRecogido());
-        if (item.getProducto().getEstante() != null) {
-            r.setEstanteNombre(item.getProducto().getEstante().getNombre());
-            r.setOrdenLogico(item.getProducto().getEstante().getOrdenLogico());
+
+        if (item.getProducto() != null) {
+            r.setProductoId(item.getProducto().getId());
+            r.setProductoNombre(item.getProducto().getNombre());
+            r.setProductoPrecio(item.getProducto().getPrecio());
+
+            if (item.getProducto().getEstante() != null) {
+                r.setEstanteNombre(item.getProducto().getEstante().getNombre());
+                r.setOrdenLogico(item.getProducto().getEstante().getOrdenLogico());
+            } else {
+                r.setEstanteNombre(item.getSnapshotEstanteNombre());
+                r.setOrdenLogico(item.getSnapshotEstanteOrden());
+            }
+        } else {
+            r.setProductoId(null);
+            r.setProductoNombre(item.getSnapshotNombre() != null ? item.getSnapshotNombre() : "Producto eliminado");
+            r.setProductoPrecio(item.getSnapshotPrecio() != null ? item.getSnapshotPrecio() : 0.0);
+            r.setEstanteNombre(item.getSnapshotEstanteNombre());
+            r.setOrdenLogico(item.getSnapshotEstanteOrden());
         }
+
         return r;
+    }
+
+    private ItemListaResponse toHistoricalResponse(ItemLista item) {
+        ItemListaResponse r = new ItemListaResponse();
+        r.setId(item.getId());
+        r.setCantidad(item.getCantidad());
+        r.setRecogido(item.getRecogido());
+
+        r.setProductoId(item.getProducto() != null ? item.getProducto().getId() : null);
+        r.setProductoNombre(item.getSnapshotNombre() != null
+                ? item.getSnapshotNombre()
+                : item.getProducto() != null ? item.getProducto().getNombre() : "Producto eliminado");
+
+        r.setProductoPrecio(item.getSnapshotPrecio() != null
+                ? item.getSnapshotPrecio()
+                : item.getProducto() != null ? item.getProducto().getPrecio() : 0.0);
+
+        r.setEstanteNombre(item.getSnapshotEstanteNombre());
+        r.setOrdenLogico(item.getSnapshotEstanteOrden());
+
+        return r;
+    }
+
+    private int compareBySnapshotOrLiveOrder(ItemLista a, ItemLista b) {
+        Integer oa = a.getSnapshotEstanteOrden();
+        if (oa == null && a.getProducto() != null && a.getProducto().getEstante() != null) {
+            oa = a.getProducto().getEstante().getOrdenLogico();
+        }
+        if (oa == null) {
+            oa = Integer.MAX_VALUE;
+        }
+
+        Integer ob = b.getSnapshotEstanteOrden();
+        if (ob == null && b.getProducto() != null && b.getProducto().getEstante() != null) {
+            ob = b.getProducto().getEstante().getOrdenLogico();
+        }
+        if (ob == null) {
+            ob = Integer.MAX_VALUE;
+        }
+
+        return Integer.compare(oa, ob);
     }
 }

@@ -2,8 +2,11 @@ package com.surixapp.mercado.service.impl;
 
 import com.surixapp.mercado.dto.*;
 import com.surixapp.mercado.entity.Categoria;
+import com.surixapp.mercado.entity.ListaCompra;
+import com.surixapp.mercado.exception.BusinessException;
 import com.surixapp.mercado.exception.ResourceNotFoundException;
 import com.surixapp.mercado.repository.CategoriaRepository;
+import com.surixapp.mercado.repository.ItemListaRepository;
 import com.surixapp.mercado.service.CategoriaService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,9 +17,11 @@ import java.util.List;
 public class CategoriaServiceImpl implements CategoriaService {
 
     private final CategoriaRepository repository;
+    private final ItemListaRepository itemListaRepository;
 
-    public CategoriaServiceImpl(CategoriaRepository repository) {
+    public CategoriaServiceImpl(CategoriaRepository repository, ItemListaRepository itemListaRepository) {
         this.repository = repository;
+        this.itemListaRepository = itemListaRepository;
     }
 
     @Override
@@ -55,6 +60,14 @@ public class CategoriaServiceImpl implements CategoriaService {
     public void delete(Long id) {
         if (!repository.existsById(id))
             throw new ResourceNotFoundException("Categoria " + id + " not found");
+
+        boolean tieneProductosEnListaActiva = itemListaRepository
+                .existsByProductoCategoriaIdAndListaEstado(id, ListaCompra.Estado.EN_PROCESO);
+
+        if (tieneProductosEnListaActiva)
+            throw new BusinessException(
+                    "No puedes eliminar esta categoría porque tiene productos en listas activas");
+
         repository.deleteById(id);
     }
 

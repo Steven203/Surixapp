@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface EstanteRepository extends JpaRepository<Estante, Long> {
     List<Estante> findAllByOrderByOrdenLogicoAsc(); // ruta sugerida ordenada
+    boolean existsByCoordXAndCoordY(Double coordX, Double coordY);
 }

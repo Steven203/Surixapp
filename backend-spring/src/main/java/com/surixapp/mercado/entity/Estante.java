@@ -3,7 +3,9 @@ package com.surixapp.mercado.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "estantes")
+@Table(name = "estantes", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_coordenadas", columnNames = { "coord_x", "coord_y" })
+})
 public class Estante {
 
     @Id
@@ -22,14 +24,43 @@ public class Estante {
     @Column(name = "orden_logico")
     private Integer ordenLogico;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
-    public Double getCoordX() { return coordX; }
-    public void setCoordX(Double coordX) { this.coordX = coordX; }
-    public Double getCoordY() { return coordY; }
-    public void setCoordY(Double coordY) { this.coordY = coordY; }
-    public Integer getOrdenLogico() { return ordenLogico; }
-    public void setOrdenLogico(Integer ordenLogico) { this.ordenLogico = ordenLogico; }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public Double getCoordX() {
+        return coordX;
+    }
+
+    public void setCoordX(Double coordX) {
+        this.coordX = coordX;
+    }
+
+    public Double getCoordY() {
+        return coordY;
+    }
+
+    public void setCoordY(Double coordY) {
+        this.coordY = coordY;
+    }
+
+    public Integer getOrdenLogico() {
+        return ordenLogico;
+    }
+
+    public void setOrdenLogico(Integer ordenLogico) {
+        this.ordenLogico = ordenLogico;
+    }
 }

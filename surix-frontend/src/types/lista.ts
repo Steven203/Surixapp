@@ -1,6 +1,6 @@
 export type ItemLista = {
     id: number
-    productoId: number
+    productoId: number | null    // ← nullable si el producto fue borrado
     productoNombre: string
     productoPrecio: number
     estanteNombre: string | null

@@ -9,8 +9,8 @@ export function useListaDetalle(listaId: number) {
     )
 
     const { data: items } = useSWR(
-        `/api/listas/${listaId}/items`,
-        () => listasApi.getItems(listaId)
+        `/api/listas/${listaId}/detalle`,
+        () => listasApi.getItemsHistorico(listaId)
     )
 
     const { data: estantes } = useSWR('/api/estantes', estantesApi.list)

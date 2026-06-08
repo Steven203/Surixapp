@@ -1,4 +1,3 @@
-// controller/ListaCompraController.java
 package com.surixapp.mercado.controller;
 
 import com.surixapp.mercado.dto.*;
@@ -7,6 +6,7 @@ import com.surixapp.mercado.service.ListaCompraService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -17,7 +17,7 @@ public class ListaCompraController {
     private final ItemListaService itemService;
 
     public ListaCompraController(ListaCompraService listaService,
-            ItemListaService itemService) {
+                                 ItemListaService itemService) {
         this.listaService = listaService;
         this.itemService = itemService;
     }
@@ -39,23 +39,26 @@ public class ListaCompraController {
     }
 
     @PatchMapping("/{id}/finalizar")
-    public ListaCompraResponse finalizar(
-            @PathVariable Long id,
-            @RequestParam(defaultValue = "false") boolean forzar) {
+    public ListaCompraResponse finalizar(@PathVariable Long id,
+                                         @RequestParam(defaultValue = "false") boolean forzar) {
         return listaService.finalizar(id, forzar);
     }
 
-    // Items dentro de la lista
     @PostMapping("/{listaId}/items")
     @ResponseStatus(HttpStatus.CREATED)
     public ItemListaResponse addItem(@PathVariable Long listaId,
-            @Valid @RequestBody CreateItemListaRequest request) {
+                                     @Valid @RequestBody CreateItemListaRequest request) {
         return itemService.addItem(listaId, request);
     }
 
     @GetMapping("/{listaId}/items")
-    public List<ItemListaResponse> listItems(@PathVariable Long listaId) {
-        return itemService.listByLista(listaId);
+    public List<ItemListaResponse> listItemsActivos(@PathVariable Long listaId) {
+        return itemService.listActiveView(listaId);
+    }
+
+    @GetMapping("/{listaId}/detalle")
+    public List<ItemListaResponse> listItemsHistorial(@PathVariable Long listaId) {
+        return itemService.listHistoryView(listaId);
     }
 
     @PatchMapping("/items/{itemId}/recoger")
@@ -75,9 +78,8 @@ public class ListaCompraController {
     }
 
     @PutMapping("/items/{itemId}")
-    public ItemListaResponse updateCantidad(
-            @PathVariable Long itemId,
-            @Valid @RequestBody UpdateItemCantidadRequest request) {
+    public ItemListaResponse updateCantidad(@PathVariable Long itemId,
+                                            @Valid @RequestBody UpdateItemCantidadRequest request) {
         return itemService.updateCantidad(itemId, request.getCantidad());
     }
 

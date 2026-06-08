@@ -61,6 +61,10 @@ src/
 │   │   ├── modal.tsx
 │   │   ├── badge.tsx
 │   │   └── table.tsx
+|   |   |__ card.tsx
+|   |   |__ dialog.tsx
+|   |   |__ label.tsx
+|   |   |__ sonner.tsx
 │   ├── productos/
 │   │   ├── ProductoCard.tsx
 │   │   ├── ProductoForm.tsx

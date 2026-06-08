@@ -1,7 +1,8 @@
-// service/ItemListaService.java
 package com.surixapp.mercado.service;
 
-import com.surixapp.mercado.dto.*;
+import com.surixapp.mercado.dto.CreateItemListaRequest;
+import com.surixapp.mercado.dto.ItemListaResponse;
+
 import java.util.List;
 
 public interface ItemListaService {
@@ -9,11 +10,13 @@ public interface ItemListaService {
 
     ItemListaResponse marcarRecogido(Long itemId);
 
-    List<ItemListaResponse> listByLista(Long listaId);
-
-    void removeItem(Long itemId);
+    ItemListaResponse desmarcarRecogido(Long itemId);
 
     ItemListaResponse updateCantidad(Long itemId, Integer cantidad);
 
-    ItemListaResponse desmarcarRecogido(Long itemId);
+    void removeItem(Long itemId);
+
+    List<ItemListaResponse> listActiveView(Long listaId);
+
+    List<ItemListaResponse> listHistoryView(Long listaId);
 }

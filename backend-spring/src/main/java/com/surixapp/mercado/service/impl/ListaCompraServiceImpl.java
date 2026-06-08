@@ -63,20 +63,36 @@ public class ListaCompraServiceImpl implements ListaCompraService {
             throw new BusinessException("La lista ya está finalizada");
 
         List<ItemLista> pendientes = lista.getItems().stream()
-                .filter(item -> !item.getRecogido())
-                .toList();
+                .filter(item -> !item.getRecogido()).toList();
 
         if (!pendientes.isEmpty() && !forzar) {
-            // devuelve los nombres de los pendientes para que el frontend los muestre
             String nombres = pendientes.stream()
-                    .map(i -> i.getProducto().getNombre())
+                    .map(i -> i.getProducto() != null
+                            ? i.getProducto().getNombre()
+                            : i.getSnapshotNombre())
                     .collect(java.util.stream.Collectors.joining(", "));
             throw new BusinessException("Tienes items sin recoger: " + nombres);
         }
 
-        // si forzar=true elimina los pendientes y finaliza
         if (!pendientes.isEmpty()) {
             lista.getItems().removeIf(item -> !item.getRecogido());
+        }
+
+        // guardar snapshot de cada item antes de finalizar
+        for (ItemLista item : lista.getItems()) {
+            if (item.getProducto() != null) {
+                Producto p = item.getProducto();
+                item.setSnapshotNombre(p.getNombre());
+                item.setSnapshotPrecio(p.getPrecio());
+                item.setSnapshotDescripcion(p.getDescripcion());
+                if (p.getEstante() != null) {
+                    item.setSnapshotEstanteNombre(p.getEstante().getNombre());
+                    item.setSnapshotEstanteOrden(p.getEstante().getOrdenLogico());
+                }
+                if (p.getCategoria() != null) {
+                    item.setSnapshotCategoriaNombre(p.getCategoria().getNombre());
+                }
+            }
         }
 
         lista.setEstado(ListaCompra.Estado.FINALIZADA);
@@ -84,13 +100,13 @@ public class ListaCompraServiceImpl implements ListaCompraService {
     }
 
     @Override
-   public void delete(Long id) {
-    ListaCompra lista = listaRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Lista not found"));
-    if (lista.getEstado() == ListaCompra.Estado.FINALIZADA)
-        throw new BusinessException("No puedes eliminar una lista finalizada");
-    listaRepository.deleteById(id);  // cascade borra los items automáticamente
-}
+    public void delete(Long id) {
+        ListaCompra lista = listaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Lista not found"));
+        if (lista.getEstado() == ListaCompra.Estado.FINALIZADA)
+            throw new BusinessException("No puedes eliminar una lista finalizada");
+        listaRepository.deleteById(id); // cascade borra los items automáticamente
+    }
 
     private ListaCompraResponse toResponse(ListaCompra lista) {
         ListaCompraResponse r = new ListaCompraResponse();
@@ -104,15 +120,31 @@ public class ListaCompraServiceImpl implements ListaCompraService {
     private ItemListaResponse itemToResponse(ItemLista item) {
         ItemListaResponse r = new ItemListaResponse();
         r.setId(item.getId());
-        r.setProductoId(item.getProducto().getId());
-        r.setProductoNombre(item.getProducto().getNombre());
-        r.setProductoPrecio(item.getProducto().getPrecio());
         r.setCantidad(item.getCantidad());
         r.setRecogido(item.getRecogido());
-        if (item.getProducto().getEstante() != null) {
-            r.setEstanteNombre(item.getProducto().getEstante().getNombre());
-            r.setOrdenLogico(item.getProducto().getEstante().getOrdenLogico());
+
+        // usar snapshot si el producto fue borrado
+        boolean tieneProducto = item.getProducto() != null;
+        boolean tieneSnapshot = item.getSnapshotNombre() != null;
+
+        if (tieneProducto) {
+            // lista en proceso — datos en vivo del producto
+            r.setProductoId(item.getProducto().getId());
+            r.setProductoNombre(item.getProducto().getNombre());
+            r.setProductoPrecio(item.getProducto().getPrecio());
+            if (item.getProducto().getEstante() != null) {
+                r.setEstanteNombre(item.getProducto().getEstante().getNombre());
+                r.setOrdenLogico(item.getProducto().getEstante().getOrdenLogico());
+            }
+        } else if (tieneSnapshot) {
+            // lista finalizada — datos del snapshot
+            r.setProductoId(null);
+            r.setProductoNombre(item.getSnapshotNombre());
+            r.setProductoPrecio(item.getSnapshotPrecio());
+            r.setEstanteNombre(item.getSnapshotEstanteNombre());
+            r.setOrdenLogico(item.getSnapshotEstanteOrden());
         }
+
         return r;
     }
 }

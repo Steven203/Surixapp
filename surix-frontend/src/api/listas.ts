@@ -14,13 +14,12 @@ export const listasApi = {
             body: JSON.stringify({ usuarioId }),
         }),
 
-    finalizar: (id: number, forzar = false) =>
-        apiFetch<ListaCompra>(`/api/listas/${id}/finalizar?forzar=${forzar}`, {
-            method: 'PATCH',
-        }),
 
     getItems: (listaId: number) =>
         apiFetch<ItemLista[]>(`/api/listas/${listaId}/items`),
+
+    getItemsHistorico: (listaId: number) =>
+        apiFetch<ItemLista[]>(`/api/listas/${listaId}/detalle`),
 
     addItem: (listaId: number, productoId: number, cantidad: number) =>
         apiFetch<ItemLista>(`/api/listas/${listaId}/items`, {
@@ -40,9 +39,9 @@ export const listasApi = {
         }),
 
     desmarcarRecogido: (itemId: number) =>
-    apiFetch<ItemLista>(`/api/listas/items/${itemId}/devolver`, {
-        method: 'PATCH',
-    }),
+        apiFetch<ItemLista>(`/api/listas/items/${itemId}/devolver`, {
+            method: 'PATCH',
+        }),
 
     delete: (id: number) =>
         apiFetch<void>(`/api/listas/${id}`, {
@@ -52,5 +51,10 @@ export const listasApi = {
     removeItem: (itemId: number) =>
         apiFetch<void>(`/api/listas/items/${itemId}`, {
             method: 'DELETE',
+        }),
+
+    finalizar: (id: number, forzar = false) =>
+        apiFetch<ListaCompra>(`/api/listas/${id}/finalizar?forzar=${forzar}`, {
+            method: 'PATCH',
         }),
 }
