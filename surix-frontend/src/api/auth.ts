@@ -1,13 +1,24 @@
 import { apiFetch } from './client'
-import { Usuario } from '@/types/usuario'
+
+type AuthResponse = {
+  token: string
+  id: number
+  username: string
+  roles: string[]
+}
 
 export const authApi = {
-    // busca todos los usuarios y encuentra el que coincide
-    login: async (username: string, password: string): Promise<Usuario> => {
-        const usuarios = await apiFetch<Usuario[]>('/api/usuarios')
-        const usuario = usuarios.find(u => u.username === username)
-        if (!usuario) throw new Error('Usuario no encontrado')
-        // cuando tengas JWT esto cambia por un POST /api/auth/login
-        return usuario
-    },
+  login: async (username: string, password: string) => {
+    return apiFetch<AuthResponse>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    })
+  },
+
+  register: async (username: string, password: string) => {
+    return apiFetch<AuthResponse>('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    })
+  },
 }

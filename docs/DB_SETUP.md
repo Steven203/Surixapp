@@ -107,7 +107,7 @@ Deberías ver:
 
 ---
 
-## Paso 6 — Verificar datos iniciales
+## Paso 6 — Verificar datos iniciales roles(data.sql) y usuario admin (datainitializer)
 
 ```sql
 SELECT * FROM roles;
@@ -119,34 +119,6 @@ Debe mostrar:
 |---|---|
 | 1 | ADMIN |
 | 2 | CLIENTE |
-
-Si no aparecen, insértalos manualmente:
-```sql
-INSERT INTO roles (nombre) VALUES ('ADMIN'), ('CLIENTE');
-```
-
----
-
-## Paso 7 — Crear usuario administrador inicial
-
-Con la app corriendo, usa Thunder Client o Postman:
-
-```
-POST http://localhost:8080/api/usuarios
-{
-    "username": "admin",
-    "password": "admin123"
-}
-```
-
-Luego asigna el rol ADMIN (usa el id del usuario creado):
-```
-POST http://localhost:8080/api/usuarios/1/roles/1
-```
-
----
-
-## Resumen de comandos
 
 ```bash
 # 1. Clonar el repo

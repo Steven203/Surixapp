@@ -4,17 +4,14 @@ import { useAuthStore } from '@/store/authStore'
 import { useListaStore } from '@/store/listaStore'
 import { authApi } from '@/api/auth'
 import { listasApi } from '@/api/listas'
-import { usuariosApi } from '@/api/usuarios'
+import { Usuario } from '@/types/usuario'
 
 export function useAuth() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const redirect = searchParams.get('redirect')
 
-    const setUsuario = useAuthStore(s => s.setUsuario)
-    const logout = useAuthStore(s => s.logout)
-    const usuario = useAuthStore(s => s.usuario)
-
+    const { setUsuario, logout, usuario } = useAuthStore()
     const { itemsLocales, limpiarLocales } = useListaStore()
 
     const [loading, setLoading] = useState(false)
@@ -47,8 +44,13 @@ export function useAuth() {
         setError('')
         setLoading(true)
         try {
-            const usuario = await authApi.login(username, password)
-            setUsuario(usuario)
+            const response = await authApi.login(username, password)
+            const usuario: Usuario = {
+                id: response.id,
+                username: response.username,
+                roles: response.roles,
+            }
+            setUsuario(usuario, response.token)   // ← pasa el token
             if (usuario.roles.includes('CLIENTE')) {
                 await sincronizarItemsLocales(usuario.id)
             }
@@ -64,13 +66,15 @@ export function useAuth() {
         setError('')
         setLoading(true)
         try {
-            // crear usuario
-            const nuevoUsuario = await usuariosApi.create({ username, password })
-            // asignar rol CLIENTE automáticamente (id 2)
-            const usuarioConRol = await usuariosApi.assignRole(nuevoUsuario.id, 2)
-            setUsuario(usuarioConRol)
+            const response = await authApi.register(username, password)
+            const usuario: Usuario = {
+                id: response.id,
+                username: response.username,
+                roles: response.roles,
+            }
+            setUsuario(usuario, response.token)   // ← pasa el token
             if (itemsLocales.length > 0) {
-                await sincronizarItemsLocales(usuarioConRol.id)
+                await sincronizarItemsLocales(usuario.id)
             }
             router.push(redirect ?? '/lista')
         } catch (err: any) {

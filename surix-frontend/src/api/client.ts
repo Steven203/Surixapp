@@ -1,27 +1,63 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL
+import { useAuthStore } from '@/store/authStore'
 
-type ApiError = {
-    code: string
-    message: string
-    path: string
-}
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 export async function apiFetch<T>(
     path: string,
     options?: RequestInit
 ): Promise<T> {
-    const res = await fetch(`${BASE_URL}${path}`, {
-        headers: { 'Content-Type': 'application/json' },
-        ...options,
-    })
+    const token = useAuthStore.getState().token
 
-    if (!res.ok) {
-        const error: ApiError = await res.json()
-        throw new Error(error.message ?? 'Error en el servidor')
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(options?.headers as Record<string, string> || {}),
     }
 
-    // DELETE devuelve 204 sin body
-    if (res.status === 204) return null as T
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+    }
 
-    return res.json()
+    const res = await fetch(`${BASE_URL}${path}`, {
+        ...options,
+        headers,
+    })
+
+    const contentType = res.headers.get('content-type') || ''
+    let data: any = null
+
+    if (contentType.includes('application/json')) {
+        try {
+            data = await res.json()
+        } catch {
+            data = null
+        }
+    } else {
+        try {
+            data = await res.text()
+        } catch {
+            data = null
+        }
+    }
+
+    if (!res.ok) {
+        const message =
+            typeof data === 'object' && data?.message
+                ? data.message
+                : typeof data === 'string' && data.trim()
+                    ? data
+                    : `Error ${res.status}: ${res.statusText}`
+
+        if (res.status === 401) {
+            useAuthStore.getState().logout()
+            setTimeout(() => {
+                window.location.href = '/login'
+            }, 1200)
+            throw new Error(message)
+        }
+
+        throw new Error(message)
+    }
+
+    if (res.status === 204) return null as T
+    return data as T
 }

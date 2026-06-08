@@ -28,28 +28,6 @@ CREATE DATABASE mercado_db;
 -- PASO 2 — Índices únicos case-insensitive
 -- Ejecutar DESPUÉS de correr la app al menos una vez
 -- para que Hibernate haya creado las tablas
--- ============================================================
-
--- Estantes: nombre único sin importar mayúsculas y espacios
-CREATE UNIQUE INDEX IF NOT EXISTS idx_estantes_nombre_lower
-    ON estantes (LOWER(TRIM(nombre)));
-
--- Estantes: orden lógico único
-CREATE UNIQUE INDEX IF NOT EXISTS idx_estantes_orden_logico
-    ON estantes (orden_logico);
-
--- Categorías: nombre único sin importar mayúsculas y espacios
-CREATE UNIQUE INDEX IF NOT EXISTS idx_categoria_nombre_lower
-    ON categoria (LOWER(TRIM(nombre)));
-
--- Productos: nombre único sin importar mayúsculas y espacios
-CREATE UNIQUE INDEX IF NOT EXISTS idx_productos_nombre_lower
-    ON productos (LOWER(TRIM(nombre)));
-
--- Usuarios: username único sin importar mayúsculas y espacios
-CREATE UNIQUE INDEX IF NOT EXISTS idx_usuarios_username_lower
-    ON usuarios (LOWER(TRIM(username)));
-
 
 -- ============================================================
 -- PASO 3 — Verificar que los índices se crearon correctamente
@@ -63,21 +41,6 @@ FROM pg_indexes
 WHERE tablename IN ('estantes', 'categoria', 'productos', 'usuarios')
   AND indexname LIKE 'idx_%'
 ORDER BY tablename, indexname;
-
-
--- ============================================================
--- PASO 4 — Datos iniciales (roles base)
--- Insertar solo si no existen
--- ============================================================
-
-INSERT INTO roles (nombre)
-SELECT 'ADMIN'
-WHERE NOT EXISTS (SELECT 1 FROM roles WHERE nombre = 'ADMIN');
-
-INSERT INTO roles (nombre)
-SELECT 'CLIENTE'
-WHERE NOT EXISTS (SELECT 1 FROM roles WHERE nombre = 'CLIENTE');
-
 
 -- ============================================================
 -- PASO 5 — Verificar estructura final de tablas

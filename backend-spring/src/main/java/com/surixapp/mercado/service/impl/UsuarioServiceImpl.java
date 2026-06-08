@@ -10,6 +10,7 @@ import com.surixapp.mercado.exception.ResourceNotFoundException;
 import com.surixapp.mercado.repository.RoleRepository;
 import com.surixapp.mercado.repository.UsuarioRepository;
 import com.surixapp.mercado.service.UsuarioService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,17 +22,25 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, RoleRepository roleRepository) {
+    public UsuarioServiceImpl(UsuarioRepository usuarioRepository,
+                              RoleRepository roleRepository,
+                              PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public UsuarioResponse create(CreateUsuarioRequest request) {
+        if (usuarioRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new BusinessException("El username ya existe");
+        }
+
         Usuario u = new Usuario();
         u.setUsername(request.getUsername());
-        u.setPassword(request.getPassword()); // en producción hashear con BCrypt
+        u.setPassword(passwordEncoder.encode(request.getPassword()));
         return toResponse(usuarioRepository.save(u));
     }
 
@@ -55,7 +64,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (!u.getRoles().contains(r))
             throw new BusinessException("El usuario no tiene ese rol");
 
-        // evitar que el admin se quite su propio rol
         if (u.getRoles().size() == 1)
             throw new BusinessException("El usuario debe tener al menos un rol");
 
@@ -71,7 +79,7 @@ public class UsuarioServiceImpl implements UsuarioService {
         existing.setUsername(request.getUsername());
 
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            existing.setPassword(request.getPassword()); // en producción hashear con BCrypt
+            existing.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
         return toResponse(usuarioRepository.save(existing));
