@@ -123,7 +123,7 @@ items_lista ──── ManyToOne ──── productos ──── ManyToOne
 | `categoria` | id, nombre, descripcion |
 | `productos` | id, nombre, precio, stock, descripcion, estante_id (FK), categoria_id (FK) |
 | `listas_compra` | id, usuario_id (FK), estado |
-| `items_lista` | id, lista_id (FK), producto_id (FK), cantidad, recogido |
+| `items_lista` | id, lista_id (FK), producto_id (FK), cantidad, recogido | snaphots
 
 
 ## Endpoints
@@ -192,6 +192,7 @@ items_lista ──── ManyToOne ──── productos ──── ManyToOne
 | PATCH | `/api/listas/items/{itemId}/devolver` | — | Desmarcar como recogido |
 | DELETE | `/api/listas/items/{itemId}` | — | Eliminar item |
 | DELETE | `/api/listas/{Id}` | — | Eliminar lista |
+| GET | `/api/listas/{id}/items` | — | Items ordenados del historial|
 
 ---
 

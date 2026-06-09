@@ -15,6 +15,17 @@ type Props = {
     estantesCompletados: Set<string>
 }
 
+// calcula el centro de un estante en el canvas
+function getCentro(estante: Estante) {
+    return {
+        x: PADDING + (estante.coordX - 1) * CELDA + (CELDA - 8) / 2,
+        y: PADDING + (estante.coordY - 1) * CELDA + (CELDA - 8) / 2,
+    }
+}
+
+// posición de la entrada del supermercado
+const ENTRADA = { x: PADDING / 2, y: PADDING / 2 }
+
 export default function EstanteMap({
     estantes,
     items,
@@ -34,6 +45,22 @@ export default function EstanteMap({
     const maxY = Math.max(...estantes.map(e => e.coordY))
     const anchoCanvas = maxX * CELDA + PADDING * 2
     const altoCanvas = maxY * CELDA + PADDING * 2
+
+    // estantes en la ruta — ordenados por orden_logico, solo los que tienen productos
+    const estantesEnRuta = estantes
+        .filter(e => estantesConProductos.has(e.nombre))
+        .sort((a, b) => a.ordenLogico - b.ordenLogico)
+
+    // puntos de la ruta: entrada + estantes con productos
+    const puntosRuta = [ENTRADA, ...estantesEnRuta.map(getCentro)]
+
+    // posición actual del muñeco — estante activo o entrada si no hay
+    const estanteActivo = estantesEnRuta.find(e => e.nombre === nombreEstanteActivo)
+    const posicionMuneco = estanteActivo
+        ? getCentro(estanteActivo)
+        : estantesEnRuta.length > 0 && estantesCompletados.size === estantesEnRuta.length
+            ? getCentro(estantesEnRuta[estantesEnRuta.length - 1]) // todos completados
+            : ENTRADA
 
     const getEstado = (estante: Estante) => {
         if (estante.nombre === nombreEstanteActivo) return 'activo'
@@ -65,12 +92,13 @@ export default function EstanteMap({
                     className="relative"
                     style={{ width: anchoCanvas, height: altoCanvas, minWidth: '100%' }}
                 >
-                    {/* cuadrícula */}
                     <svg
-                        className="absolute inset-0 pointer-events-none"
+                        className="absolute inset-0"
                         width={anchoCanvas}
                         height={altoCanvas}
+                        style={{ zIndex: 1 }}
                     >
+                        {/* cuadrícula */}
                         {Array.from({ length: maxX + 1 }, (_, i) => (
                             <line key={`v${i}`}
                                 x1={PADDING + i * CELDA} y1={PADDING / 2}
@@ -83,26 +111,100 @@ export default function EstanteMap({
                                 x2={anchoCanvas - PADDING / 2} y2={PADDING + i * CELDA}
                                 stroke="#f1f5f9" strokeWidth="1" />
                         ))}
+
+                        {/* línea de ruta — conecta entrada con estantes en orden */}
+                        {puntosRuta.length > 1 && puntosRuta.map((punto, i) => {
+                            if (i === 0) return null
+                            const anterior = puntosRuta[i - 1]
+                            const estante = estantesEnRuta[i - 1]
+                            const completado = estante
+                                ? estantesCompletados.has(estante.nombre)
+                                : false
+
+                            return (
+                                <line
+                                    key={`ruta-${i}`}
+                                    x1={anterior.x}
+                                    y1={anterior.y}
+                                    x2={punto.x}
+                                    y2={punto.y}
+                                    stroke={completado ? '#22c55e' : '#3b82f6'}
+                                    strokeWidth="2.5"
+                                    strokeDasharray={completado ? 'none' : '6 3'}
+                                    opacity="0.7"
+                                />
+                            )
+                        })}
+
+                        {/* puntos en cada estante de la ruta */}
+                        {estantesEnRuta.map((estante, i) => {
+                            const centro = getCentro(estante)
+                            const completado = estantesCompletados.has(estante.nombre)
+                            return (
+                                <circle
+                                    key={`punto-${estante.id}`}
+                                    cx={centro.x}
+                                    cy={centro.y}
+                                    r="4"
+                                    fill={completado ? '#22c55e' : '#3b82f6'}
+                                    opacity="0.8"
+                                />
+                            )
+                        })}
+
+                        {/* número de orden sobre la línea */}
+                        {estantesEnRuta.map((estante, i) => {
+                            const centro = getCentro(estante)
+                            return (
+                                <text
+                                    key={`num-${estante.id}`}
+                                    x={centro.x + 8}
+                                    y={centro.y - 8}
+                                    fontSize="9"
+                                    fill="#3b82f6"
+                                    fontWeight="bold"
+                                >
+                                    {i + 1}
+                                </text>
+                            )
+                        })}
+
+                        {/* muñeco — se mueve con transition CSS */}
+                        <g
+                            style={{
+                                transform: `translate(${posicionMuneco.x}px, ${posicionMuneco.y}px)`,
+                                transition: 'transform 0.8s ease-in-out',
+                            }}
+                        >
+                            {/* cuerpo */}
+                            <circle cx="0" cy="-18" r="6" fill="#1e40af" />
+                            {/* cabeza */}
+                            <circle cx="0" cy="-28" r="5" fill="#fbbf24" stroke="#92400e" strokeWidth="1" />
+                            {/* brazos */}
+                            <line x1="-8" y1="-16" x2="8" y2="-16" stroke="#1e40af" strokeWidth="2.5" strokeLinecap="round" />
+                            {/* piernas */}
+                            <line x1="0" y1="-12" x2="-5" y2="-4" stroke="#1e40af" strokeWidth="2.5" strokeLinecap="round" />
+                            <line x1="0" y1="-12" x2="5" y2="-4" stroke="#1e40af" strokeWidth="2.5" strokeLinecap="round" />
+                        </g>
+
+                        {/* entrada */}
+                        <text x={ENTRADA.x - 8} y={ENTRADA.y + 4} fontSize="18">🚪</text>
                     </svg>
 
-                    {/* estantes */}
-                    {estantes.map(estante => (
-                        <EstanteBlock
-                            key={estante.id}
-                            estante={estante}
-                            estado={getEstado(estante)}
-                            productosAqui={items.filter(
-                                i => i.estanteNombre === estante.nombre
-                            )}
-                            celda={CELDA}
-                            padding={PADDING}
-                        />
-                    ))}
-
-                    {/* entrada */}
-                    <div className="absolute text-xl"
-                        style={{ left: PADDING / 4, bottom: PADDING / 4 }}>
-                        🚪
+                    {/* estantes como divs encima del SVG */}
+                    <div className="absolute inset-0" style={{ zIndex: 2 }}>
+                        {estantes.map(estante => (
+                            <EstanteBlock
+                                key={estante.id}
+                                estante={estante}
+                                estado={getEstado(estante)}
+                                productosAqui={items.filter(
+                                    i => i.estanteNombre === estante.nombre
+                                )}
+                                celda={CELDA}
+                                padding={PADDING}
+                            />
+                        ))}
                     </div>
                 </div>
             </div>
@@ -123,6 +225,17 @@ export default function EstanteMap({
                             }
                         </p>
                     </div>
+                </div>
+            )}
+
+            {/* todos completados */}
+            {estantesEnRuta.length > 0 &&
+             estantesCompletados.size === estantesEnRuta.size &&
+             estantesEnRuta.every(e => estantesCompletados.has(e.nombre)) && (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
+                    <p className="text-sm font-semibold text-green-800">
+                        🎉 ¡Ruta completada! Ya recogiste todos los productos.
+                    </p>
                 </div>
             )}
         </div>
