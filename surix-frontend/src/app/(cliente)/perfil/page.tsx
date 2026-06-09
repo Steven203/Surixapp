@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useAuthStore } from '@/store/authStore'
 import { usuariosApi } from '@/api/usuarios'
@@ -25,18 +26,30 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 export default function PerfilPage() {
-    const usuario = useAuthStore(s => s.usuario)
-    const setUsuario = useAuthStore(s => s.setUsuario)
+    const { usuario, setUsuario, token } = useAuthStore()
     const { handleLogout } = useAuth()
 
     const {
         register,
         handleSubmit,
+        reset,
         formState: { errors, isSubmitting },
     } = useForm<FormData>({
         resolver: zodResolver(schema),
-        defaultValues: { username: usuario?.username ?? '', password: '' },
+        defaultValues: {
+            username: '',
+            password: '',
+        },
     })
+
+    useEffect(() => {
+        if (usuario) {
+            reset({
+                username: usuario.username ?? '',
+                password: '',
+            })
+        }
+    }, [usuario, reset])
 
     const onSubmit = async (data: FormData) => {
         if (!usuario) return
@@ -45,7 +58,7 @@ export default function PerfilPage() {
                 username: data.username,
                 password: data.password || undefined,
             })
-            setUsuario(actualizado)
+            setUsuario(actualizado, token ?? '')
             toast.success('Perfil actualizado')
         } catch (err: any) {
             toast.error(err.message ?? 'Error al actualizar')
@@ -70,6 +83,7 @@ export default function PerfilPage() {
                             <p className="text-xs text-red-500">{errors.username.message}</p>
                         )}
                     </div>
+
                     <div className="space-y-1">
                         <Label>
                             Nueva contraseña
@@ -82,7 +96,8 @@ export default function PerfilPage() {
                             <p className="text-xs text-red-500">{errors.password.message}</p>
                         )}
                     </div>
-                    <Button type="submit" disabled={isSubmitting} className="w-full">
+
+                    <Button type="submit" disabled={isSubmitting || !usuario} className="w-full">
                         {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
                     </Button>
                 </form>
