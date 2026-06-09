@@ -4,8 +4,8 @@ import { Usuario } from '@/types/usuario'
 
 type AuthStore = {
     usuario: Usuario | null
-    token: string | null        // ← nuevo
-    setUsuario: (usuario: Usuario, token: string) => void  // ← cambia
+    token: string | null
+    setUsuario: (usuario: Usuario, token?: string) => void
     logout: () => void
     isAdmin: () => boolean
     isCliente: () => boolean
@@ -17,11 +17,18 @@ export const useAuthStore = create<AuthStore>()(
             usuario: null,
             token: null,
             setUsuario: (usuario, token) => {
-                document.cookie = `auth-user=${JSON.stringify(usuario)}; path=/`
-                set({ usuario, token })
+                if (typeof document !== 'undefined') {
+                    document.cookie = 'auth-user=${ encodeURIComponent(JSON.stringify(usuario)) }; path =/'
+                }
+                set(state => ({
+                    usuario,
+                    token: token ?? state.token,
+                }))
             },
             logout: () => {
-                document.cookie = 'auth-user=; path=/; max-age=0'
+                if (typeof document !== 'undefined') {
+                    document.cookie = 'auth-user=; path=/; max-age=0'
+                }
                 set({ usuario: null, token: null })
             },
             isAdmin: () => get().usuario?.roles.includes('ADMIN') ?? false,

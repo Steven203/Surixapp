@@ -4,28 +4,42 @@ export function proxy(request: NextRequest) {
     const authCookie = request.cookies.get('auth-user')?.value
     const path = request.nextUrl.pathname
 
-    // rutas que requieren login obligatorio
-    if (path.startsWith('/admin')) {
-        if (!authCookie)
-            return NextResponse.redirect(new URL('/login', request.url))
+    const safeParseUser = () => {
+        if (!authCookie) return null
         try {
-            const usuario = JSON.parse(authCookie)
-            if (!usuario?.roles?.includes('ADMIN'))
-                return NextResponse.redirect(new URL('/login', request.url))
+            return JSON.parse(decodeURIComponent(authCookie))
         } catch {
+            return null
+        }
+    }
+
+    const usuario = safeParseUser()
+
+    const isAuthRoute = path === '/login' || path === '/register'
+    const isAdminRoute = path.startsWith('/admin')
+    const isClienteRoute = path.startsWith('/lista') || path.startsWith('/perfil')
+
+    if (isAuthRoute && usuario) {
+        if (usuario?.roles?.includes('ADMIN')) {
+            return NextResponse.redirect(new URL('/admin/productos', request.url))
+        }
+        return NextResponse.redirect(new URL('/lista', request.url))
+    }
+
+    if (isAdminRoute) {
+        if (!usuario) {
+            return NextResponse.redirect(new URL('/login', request.url))
+        }
+        if (!usuario?.roles?.includes('ADMIN')) {
             return NextResponse.redirect(new URL('/login', request.url))
         }
     }
 
-    // /lista requiere login pero /catalogo es público
-    if (path.startsWith('/lista')) {
-        if (!authCookie)
-            return NextResponse.redirect(new URL('/login?redirect=/lista', request.url))
-        try {
-            const usuario = JSON.parse(authCookie)
-            if (!usuario?.roles?.includes('CLIENTE') && !usuario?.roles?.includes('ADMIN'))
-                return NextResponse.redirect(new URL('/login', request.url))
-        } catch {
+    if (isClienteRoute) {
+        if (!usuario) {
+            return NextResponse.redirect(new URL('/login', request.url))
+        }
+        if (!usuario?.roles?.includes('CLIENTE') && !usuario?.roles?.includes('ADMIN')) {
             return NextResponse.redirect(new URL('/login', request.url))
         }
     }
@@ -34,5 +48,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/admin/:path*', '/lista/:path*', '/perfil/:path*'],
+    matcher: ['/admin/:path*', '/lista/:path*', '/perfil/:path*', '/login', '/register'],
 }
