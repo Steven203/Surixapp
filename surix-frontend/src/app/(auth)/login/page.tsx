@@ -1,5 +1,3 @@
-'use client'
-
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
@@ -20,7 +18,7 @@ export default function LoginPage() {
     }
 
     return (
-        <main className="min-h-screen flex items-center justify-center bg-slate-100">
+        <main className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
             <Card className="w-full max-w-sm">
                 <CardHeader>
                     <CardTitle className="text-2xl text-center">🛒 Surix App</CardTitle>
@@ -38,6 +36,7 @@ export default function LoginPage() {
                                 required
                             />
                         </div>
+
                         <div className="space-y-2">
                             <Label htmlFor="password">Contraseña</Label>
                             <Input

@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { z } from 'zod'
@@ -35,25 +34,31 @@ export default function RegisterPage() {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm<FormData>({ resolver: zodResolver(schema) })
+    } = useForm<FormData>({
+        resolver: zodResolver(schema),
+        defaultValues: {
+            username: '',
+            password: '',
+            confirmar: '',
+        },
+    })
 
     const onSubmit = async (data: FormData) => {
         await registerUser(data.username, data.password)
     }
 
     return (
-        <main className="min-h-screen flex items-center justify-center bg-slate-100">
+        <main className="min-h-screen flex items-center justify-center bg-slate-100 px-4">
             <Card className="w-full max-w-sm">
                 <CardHeader>
-                    <CardTitle className="text-2xl text-center">
-                        🛒 Crear cuenta
-                    </CardTitle>
+                    <CardTitle className="text-2xl text-center">🛒 Crear cuenta</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div className="space-y-1">
-                            <Label>Usuario</Label>
+                            <Label htmlFor="username">Usuario</Label>
                             <Input
+                                id="username"
                                 {...register('username')}
                                 placeholder="juan123"
                             />
@@ -65,8 +70,9 @@ export default function RegisterPage() {
                         </div>
 
                         <div className="space-y-1">
-                            <Label>Contraseña</Label>
+                            <Label htmlFor="password">Contraseña</Label>
                             <Input
+                                id="password"
                                 {...register('password')}
                                 type="password"
                                 placeholder="••••••••"
@@ -79,8 +85,9 @@ export default function RegisterPage() {
                         </div>
 
                         <div className="space-y-1">
-                            <Label>Confirmar contraseña</Label>
+                            <Label htmlFor="confirmar">Confirmar contraseña</Label>
                             <Input
+                                id="confirmar"
                                 {...register('confirmar')}
                                 type="password"
                                 placeholder="••••••••"
