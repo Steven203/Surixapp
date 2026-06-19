@@ -23,7 +23,7 @@ export function useUsuarios() {
     try {
       await usuariosApi.assignRole(usuarioId, roleId)
       await mutate()
-      toast.success('Rol ${rolNombre} asignado')
+      toast.success(`Rol ${rolNombre} asignado`)
       return true
     } catch (err: any) {
       toast.error(err.message ?? 'Error al asignar rol')
@@ -47,7 +47,7 @@ export function useUsuarios() {
     try {
       await usuariosApi.removeRole(usuarioId, roleId)
       mutate()
-      toast.success('Rol ${rolNombre} removido')
+      toast.success(`Rol ${rolNombre} removido`)
     } catch (err: any) {
       toast.error(err.message ?? 'Error al remover rol')
     }

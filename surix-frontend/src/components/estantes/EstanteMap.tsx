@@ -230,14 +230,14 @@ export default function EstanteMap({
 
             {/* todos completados */}
             {estantesEnRuta.length > 0 &&
-             estantesCompletados.size === estantesEnRuta.length &&
-             estantesEnRuta.every(e => estantesCompletados.has(e.nombre)) && (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
-                    <p className="text-sm font-semibold text-green-800">
-                        🎉 ¡Ruta completada! Ya recogiste todos los productos.
-                    </p>
-                </div>
-            )}
+                estantesCompletados.size === estantesEnRuta.length &&
+                estantesEnRuta.every(e => estantesCompletados.has(e.nombre)) && (
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
+                        <p className="text-sm font-semibold text-green-800">
+                            🎉 ¡Ruta completada! Ya recogiste todos los productos.
+                        </p>
+                    </div>
+                )}
         </div>
     )
 }

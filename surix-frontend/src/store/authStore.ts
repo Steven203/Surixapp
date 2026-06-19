@@ -18,7 +18,7 @@ export const useAuthStore = create<AuthStore>()(
             token: null,
             setUsuario: (usuario, token) => {
                 if (typeof document !== 'undefined') {
-                    document.cookie = 'auth-user=${ encodeURIComponent(JSON.stringify(usuario)) }; path =/'
+                    document.cookie = `auth-user=${encodeURIComponent(JSON.stringify(usuario))}; path=/`
                 }
                 set(state => ({
                     usuario,
