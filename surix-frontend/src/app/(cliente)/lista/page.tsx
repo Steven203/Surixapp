@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import RutaSugerida from '@/components/lista/RutaSugerida'
 import ListaActions from '@/components/lista/ListaActions'
 import EstanteMap from '@/components/estantes/EstanteMap'
+import ConfirmDialog from '@/components/ui/confirmdialog'
 
 export default function ListaPage() {
     const router = useRouter()
@@ -31,6 +32,8 @@ export default function ListaPage() {
         nombreEstanteActivo,
         estantesConProductos,
         estantesCompletados,
+        confirmConfig,
+        cerrarConfirm,
         crearLista,
         marcarRecogido,
         desmarcarRecogido,
@@ -214,6 +217,21 @@ export default function ListaPage() {
                     )}
                 </div>
             )}
+
+            {confirmConfig && (
+                <ConfirmDialog
+                    open={!!confirmConfig}
+                    titulo={confirmConfig.titulo}
+                    descripcion={confirmConfig.descripcion}
+                    resumen={confirmConfig.resumen}
+                    labelConfirmar={confirmConfig.labelConfirmar}
+                    labelCancelar="Seguir comprando"
+                    variante={confirmConfig.variante}
+                    onConfirmar={confirmConfig.onConfirmar}
+                    onCancelar={cerrarConfirm}
+                />
+            )}
         </div>
+
     )
 }

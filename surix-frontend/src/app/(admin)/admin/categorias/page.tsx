@@ -6,6 +6,10 @@ import { Categoria, CategoriaFormData, CategoriaUpdateData } from '@/types/categ
 import { Button } from '@/components/ui/button'
 import CategoriaForm from '@/components/categorias/CategoriaForm'
 import EditModal from '@/components/admin/EditModal'
+import { usePagination } from '@/hooks/usePagination'
+import SearchBar from '@/components/ui/searchbar'
+import Pagination from '@/components/ui/pagination'
+import EmptyState from '@/components/ui/emptystate'
 import {
     Dialog, DialogContent, DialogHeader,
     DialogTitle, DialogTrigger,
@@ -15,10 +19,21 @@ import {
     TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 
+const PER_PAGE = 10
+
 export default function CategoriasPage() {
     const { categorias, isLoading, crear, actualizar, eliminar } = useCategorias()
     const [openCrear, setOpenCrear] = useState(false)
     const [editando, setEditando] = useState<Categoria | null>(null)
+    const [busqueda, setBusqueda] = useState('')
+
+    const categoriasFiltradas = categorias?.filter(c =>
+        c.nombre.toLowerCase().includes(busqueda.toLowerCase())
+    )
+
+    const { page, setPage, totalPages, itemsPagina } = usePagination(
+        categoriasFiltradas, PER_PAGE
+    )
 
     const handleCrear = async (data: CategoriaFormData) => {
         const ok = await crear(data)
@@ -39,7 +54,8 @@ export default function CategoriasPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-slate-800">Categorías</h1>
                     <p className="text-slate-500 text-sm mt-1">
-                        {categorias?.length ?? 0} categorías registradas
+                        {categoriasFiltradas?.length ?? 0} categorías
+                        {busqueda && ` · filtrado de ${categorias?.length ?? 0}`}
                     </p>
                 </div>
 
@@ -58,6 +74,12 @@ export default function CategoriasPage() {
                     </DialogContent>
                 </Dialog>
             </div>
+
+            <SearchBar
+                value={busqueda}
+                onChange={v => { setBusqueda(v); setPage(1) }}
+                placeholder="Buscar categoría..."
+            />
 
             {/* modal editar */}
             <EditModal
@@ -87,7 +109,7 @@ export default function CategoriasPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {categorias?.map((c: Categoria) => (
+                        {itemsPagina.map((c: Categoria) => (
                             <TableRow key={c.id}>
                                 <TableCell className="font-medium">{c.nombre}</TableCell>
                                 <TableCell className="hidden sm:table-cell">
@@ -113,16 +135,19 @@ export default function CategoriasPage() {
                                 </TableCell>
                             </TableRow>
                         ))}
-                        {!isLoading && categorias?.length === 0 && (
-                            <TableRow>
-                                <TableCell colSpan={3} className="text-center text-slate-400 py-8">
-                                    No hay categorías registradas
-                                </TableCell>
-                            </TableRow>
-                        )}
                     </TableBody>
                 </Table>
+                {!isLoading && itemsPagina.length === 0 && (
+                    <EmptyState
+                        icono="📦"
+                        titulo={busqueda ? 'Sin resultados' : 'No hay productos registrados'}
+                        descripcion={busqueda ? `No encontramos "${busqueda}"` : undefined}
+                    />
+                )}
+
+
             </div>
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
     )
 }

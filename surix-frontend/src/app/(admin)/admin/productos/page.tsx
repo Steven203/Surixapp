@@ -2,40 +2,39 @@
 
 import { useState } from 'react'
 import { useProductosAdmin } from '@/hooks/useProductosAdmin'
-import { Producto, ProductoFormData } from '@/types/producto'
+import { usePagination } from '@/hooks/usePagination'
+import { Producto, ProductoFormData, ProductoUpdateData } from '@/types/producto'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import SearchBar from '@/components/ui/searchbar'
+import Pagination from '@/components/ui/pagination'
+import EmptyState from '@/components/ui/emptystate'
 import ProductoForm from '@/components/productos/ProductoForm'
 import EditModal from '@/components/admin/EditModal'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 
-export default function ProductosPage() {
-  const {
-    productos,
-    estantes,
-    categorias,
-    isLoading,
-    crear,
-    actualizar,
-    eliminar,
-  } = useProductosAdmin()
+const PER_PAGE = 10
 
+export default function ProductosPage() {
+  const { productos, estantes, categorias, isLoading, crear, actualizar, eliminar } =
+    useProductosAdmin()
+
+  const [busqueda, setBusqueda] = useState('')
   const [openCrear, setOpenCrear] = useState(false)
   const [editando, setEditando] = useState<Producto | null>(null)
+
+  const productosFiltrados = productos?.filter(p =>
+    p.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  )
+
+  const { page, setPage, totalPages, itemsPagina } = usePagination(
+    productosFiltrados, PER_PAGE
+  )
 
   const handleCrear = async (data: ProductoFormData) => {
     const ok = await crear(data)
@@ -43,7 +42,7 @@ export default function ProductosPage() {
     return ok
   }
 
-  const handleActualizar = async (data: ProductoFormData) => {
+  const handleActualizar = async (data: ProductoUpdateData) => {
     if (!editando) return false
     const ok = await actualizar(editando.id, data)
     if (ok) setEditando(null)
@@ -56,7 +55,8 @@ export default function ProductosPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Productos</h1>
           <p className="text-slate-500 text-sm mt-1">
-            {productos?.length ?? 0} productos registrados
+            {productosFiltrados?.length ?? 0} productos
+            {busqueda && ` · filtrado de ${productos?.length ?? 0}`}
           </p>
         </div>
 
@@ -78,11 +78,13 @@ export default function ProductosPage() {
         </Dialog>
       </div>
 
-      <EditModal
-        open={!!editando}
-        onClose={() => setEditando(null)}
-        titulo="Editar producto"
-      >
+      <SearchBar
+        value={busqueda}
+        onChange={v => { setBusqueda(v); setPage(1) }}
+        placeholder="Buscar producto..."
+      />
+
+      <EditModal open={!!editando} onClose={() => setEditando(null)} titulo="Editar producto">
         {editando && (
           <ProductoForm
             estantes={estantes ?? []}
@@ -114,7 +116,7 @@ export default function ProductosPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {productos?.map((p: Producto) => (
+            {itemsPagina.map((p: Producto) => (
               <TableRow key={p.id}>
                 <TableCell className="font-medium">{p.nombre}</TableCell>
                 <TableCell>${p.precio.toLocaleString()}</TableCell>
@@ -131,26 +133,31 @@ export default function ProductosPage() {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex gap-2 justify-end">
-                    <Button variant="outline" size="sm" onClick={() => setEditando(p)}>
+                    <Button variant="outline" size="sm"
+                      onClick={() => setEditando(p)}>
                       Editar
                     </Button>
-                    <Button variant="destructive" size="sm" onClick={() => eliminar(p.id, p.nombre)}>
+                    <Button variant="destructive" size="sm"
+                      onClick={() => eliminar(p.id, p.nombre)}>
                       Eliminar
                     </Button>
                   </div>
                 </TableCell>
               </TableRow>
             ))}
-            {!isLoading && productos?.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-slate-400 py-8">
-                  No hay productos registrados
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
+
+        {!isLoading && itemsPagina.length === 0 && (
+          <EmptyState
+            icono="📦"
+            titulo={busqueda ? 'Sin resultados' : 'No hay productos registrados'}
+            descripcion={busqueda ? `No encontramos "${busqueda}"` : undefined}
+          />
+        )}
       </div>
+
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   )
 }

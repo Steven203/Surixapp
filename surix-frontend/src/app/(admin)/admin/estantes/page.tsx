@@ -6,6 +6,12 @@ import { Estante, EstanteFormData, EstanteUpdateData } from '@/types/estante'
 import { Button } from '@/components/ui/button'
 import EstanteForm from '@/components/estantes/EstanteForm'
 import EditModal from '@/components/admin/EditModal'
+import { Badge } from '@/components/ui/badge'
+import SearchBar from '@/components/ui/searchbar'
+import EmptyState from '@/components/ui/emptystate'
+import Pagination from '@/components/ui/pagination'
+import { usePagination } from '@/hooks/usePagination'
+const PER_PAGE = 10
 import {
     Dialog, DialogContent, DialogHeader,
     DialogTitle, DialogTrigger,
@@ -19,6 +25,15 @@ export default function EstantesPage() {
     const { estantes, isLoading, siguienteOrden, crear, actualizar, eliminar } = useEstantes()
     const [openCrear, setOpenCrear] = useState(false)
     const [editando, setEditando] = useState<Estante | null>(null)
+    const [busqueda, setBusqueda] = useState('')
+
+    const estantesFiltrados = estantes?.filter(e =>
+        e.nombre.toLowerCase().includes(busqueda.toLowerCase())
+    )
+
+    const { page, setPage, totalPages, itemsPagina } = usePagination(
+        estantesFiltrados, PER_PAGE
+    )
 
     const handleCrear = async (data: EstanteFormData) => {
         const ok = await crear(data)
@@ -39,8 +54,8 @@ export default function EstantesPage() {
                 <div>
                     <h1 className="text-2xl font-bold text-slate-800">Estantes</h1>
                     <p className="text-slate-500 text-sm mt-1">
-                        {estantes?.length ?? 0} estantes · siguiente orden:{' '}
-                        <span className="font-medium text-slate-700">#{siguienteOrden}</span>
+                        {estantesFiltrados?.length ?? 0} estantes
+                        {busqueda && ` · filtrado de ${estantes?.length ?? 0}`}
                     </p>
                 </div>
 
@@ -60,6 +75,12 @@ export default function EstantesPage() {
                     </DialogContent>
                 </Dialog>
             </div>
+
+            <SearchBar
+                value={busqueda}
+                onChange={v => { setBusqueda(v); setPage(1) }}
+                placeholder="Buscar estante..."
+            />
 
             {/* modal editar */}
             <EditModal
@@ -94,7 +115,7 @@ export default function EstantesPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {estantes?.map((e: Estante) => (
+                        {itemsPagina.map((e: Estante) => (
                             <TableRow key={e.id}>
                                 <TableCell className="font-medium">{e.nombre}</TableCell>
                                 <TableCell className="hidden sm:table-cell">{e.coordX}</TableCell>
@@ -120,16 +141,18 @@ export default function EstantesPage() {
                                 </TableCell>
                             </TableRow>
                         ))}
-                        {!isLoading && estantes?.length === 0 && (
-                            <TableRow>
-                                <TableCell colSpan={5} className="text-center text-slate-400 py-8">
-                                    No hay estantes registrados
-                                </TableCell>
-                            </TableRow>
-                        )}
                     </TableBody>
                 </Table>
+                {!isLoading && itemsPagina.length === 0 && (
+                    <EmptyState
+                        icono="📦"
+                        titulo={busqueda ? 'Sin resultados' : 'No hay productos registrados'}
+                        descripcion={busqueda ? `No encontramos "${busqueda}"` : undefined}
+                    />
+                )}
+
             </div>
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
     )
 }

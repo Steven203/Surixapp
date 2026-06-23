@@ -1,4 +1,5 @@
 import useSWR from 'swr'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { mutate as mutateGlobal } from 'swr'
 import { listasApi } from '@/api/listas'
@@ -10,6 +11,17 @@ import { useRutaSugerida } from './useRutaSugerida'
 export function useLista() {
     const usuario = useAuthStore(s => s.usuario)
     const { itemsLocales, limpiarLocales } = useListaStore()
+
+    const [confirmConfig, setConfirmConfig] = useState<{
+        titulo: string
+        descripcion: string
+        resumen?: { label: string; valor: string | number }[]
+        labelConfirmar: string
+        variante: 'destructive' | 'default'
+        onConfirmar: () => void
+    } | null>(null)
+
+    const cerrarConfirm = () => setConfirmConfig(null)
 
     const {
         data: listas,
@@ -107,7 +119,7 @@ export function useLista() {
                     }
                 },
             },
-            cancel: { label: 'Cancelar', onClick: () => {} },
+            cancel: { label: 'Cancelar', onClick: () => { } },
         })
     }
 
@@ -145,44 +157,54 @@ export function useLista() {
         if (!listaActiva) return
 
         if (totalItems === 0) {
-            toast('Tu lista está vacía', {
-                description: '¿Deseas eliminarla?',
-                action: {
-                    label: 'Eliminar lista',
-                    onClick: async () => {
-                        await eliminarLista()
-                        toast.success('Lista eliminada')
-                    },
+            setConfirmConfig({
+                titulo: 'Tu lista está vacía',
+                descripcion: 'No has agregado ningún producto. ¿Deseas eliminar esta lista?',
+                labelConfirmar: 'Eliminar lista',
+                variante: 'destructive',
+                onConfirmar: async () => {
+                    cerrarConfirm()
+                    await eliminarLista()
+                    toast.success('Lista eliminada')
                 },
-                cancel: { label: 'Cancelar', onClick: () => {} },
             })
             return
         }
 
         if (itemsRecogidos === 0 && !forzar) {
-            toast('No has recogido ningún producto', {
-                description: '¿Deseas eliminar la lista o seguir comprando?',
-                action: {
-                    label: 'Eliminar lista',
-                    onClick: async () => {
-                        await eliminarLista()
-                        toast.success('Lista eliminada')
-                    },
+            setConfirmConfig({
+                titulo: 'No has recogido ningún producto',
+                descripcion: 'Aún no marcaste ningún producto como recogido.',
+                resumen: [
+                    { label: 'Productos', valor: totalItems },
+                    { label: 'Recogidos', valor: itemsRecogidos },
+                ],
+                labelConfirmar: 'Eliminar lista',
+                variante: 'destructive',
+                onConfirmar: async () => {
+                    cerrarConfirm()
+                    await eliminarLista()
+                    toast.success('Lista eliminada')
                 },
-                cancel: { label: 'Seguir comprando', onClick: () => {} },
             })
             return
         }
 
         if (itemsRecogidos < totalItems && !forzar) {
             const pendientes = totalItems - itemsRecogidos
-            toast(`${pendientes} producto${pendientes > 1 ? 's' : ''} sin recoger`, {
-                description: '¿Deseas finalizar de todas formas?',
-                action: {
-                    label: 'Finalizar igual',
-                    onClick: () => finalizar(true),
+            setConfirmConfig({
+                titulo: `${pendientes} producto${pendientes > 1 ? 's' : ''} sin recoger`,
+                descripcion: 'Si finalizas ahora, los productos no recogidos se eliminarán de la lista.',
+                resumen: [
+                    { label: 'Recogidos', valor: itemsRecogidos },
+                    { label: 'Pendientes', valor: pendientes },
+                ],
+                labelConfirmar: 'Finalizar igual',
+                variante: 'default',
+                onConfirmar: () => {
+                    cerrarConfirm()
+                    finalizar(true)
                 },
-                cancel: { label: 'Seguir comprando', onClick: () => {} },
             })
             return
         }
@@ -192,14 +214,12 @@ export function useLista() {
             await mutarListas()
             await mutarItems()
             await mutateGlobal(`/api/listas/${listaActiva.id}/items`, [])
-            if (usuario)
-                await mutateGlobal(`/api/listas/usuario/${usuario.id}`)
+            if (usuario) await mutateGlobal(`/api/listas/usuario/${usuario.id}`)
             toast.success('¡Compra finalizada!')
         } catch (err: any) {
             toast.error(err.message)
         }
     }
-
     const sincronizarItemsLocales = async () => {
         if (!listaActiva) return
         if (itemsLocales.length === 0) {
@@ -242,5 +262,7 @@ export function useLista() {
         sincronizarItemsLocales,
         mutarItems,
         mutarListas,
+        confirmConfig,
+        cerrarConfirm,
     }
 }

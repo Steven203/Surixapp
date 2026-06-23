@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { Button } from '@/components/ui/button'
+import Navbar from '@/components/layout/Navbar'
 
 export default function LandingPage() {
     const router = useRouter()
@@ -19,62 +20,53 @@ export default function LandingPage() {
 
     return (
         <div className="min-h-screen bg-white flex flex-col">
+            <Navbar
+                leftContent={
+                    <>
+                        <span className="text-xl font-bold text-slate-800">🛒 Surix App</span>
+                    </>
+                }
+                rightContent={
+                    !usuario ? (
+                        <>
+                            <button
+                                onClick={() => router.push('/login')}
+                                className="text-sm text-slate-600 hover:text-slate-800"
+                            >
+                                Iniciar sesión
+                            </button>
+                            <Button size="sm" onClick={() => router.push('/register')}>
+                                Crear cuenta
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <span className="text-sm text-slate-500 hidden sm:block">
+                                Hola, {usuario.username}
+                            </span>
+                            <Button size="sm" onClick={handleCTA}>
+                                Ir a la app →
+                            </Button>
+                        </>
+                    )
+                }
+                logoHref="/"
+            />
 
-            {/* navbar */}
-            <header className="border-b border-slate-100 px-6 py-4">
-                <div className="max-w-5xl mx-auto flex items-center justify-between">
-                    <span className="text-xl font-bold text-slate-800">🛒 Surix App</span>
-                    <div className="flex items-center gap-3">
-                        {!usuario ? (
-                            <>
-                                <button
-                                    onClick={() => router.push('/login')}
-                                    className="text-sm text-slate-600 hover:text-slate-800"
-                                >
-                                    Iniciar sesión
-                                </button>
-                                <Button
-                                    size="sm"
-                                    onClick={() => router.push('/register')}
-                                >
-                                    Crear cuenta
-                                </Button>
-                            </>
-                        ) : (
-                            <>
-                                <span className="text-sm text-slate-500">
-                                    Hola, {usuario.username}
-                                </span>
-                                <Button size="sm" onClick={handleCTA}>
-                                    Ir a la app →
-                                </Button>
-                            </>
-                        )}
-                    </div>
-                </div>
-            </header>
-
-            {/* hero */}
             <section className="flex-1 flex items-center justify-center px-6 py-20">
                 <div className="max-w-3xl mx-auto text-center space-y-8">
                     <div className="space-y-4">
                         <span className="text-6xl">🛒</span>
                         <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 leading-tight">
-                            Haz tu mercado{' '}
-                            <span className="text-blue-600">inteligente</span>
+                            Haz tu mercado <span className="text-blue-600">inteligente</span>
                         </h1>
                         <p className="text-lg text-slate-500 max-w-xl mx-auto">
-                            Crea tu lista de compras, sigue la ruta más eficiente
-                            por el supermercado y ahorra tiempo en cada visita.
+                            Crea tu lista de compras, sigue la ruta más eficiente por el supermercado y ahorra tiempo en cada visita.
                         </p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button
-                            size="lg"
-                            className="text-base px-8"
-                            onClick={handleCTA}
-                        >
+                        <Button size="lg" className="text-base px-8" onClick={handleCTA}>
                             Empezar ahora — es gratis
                         </Button>
                         <Button
@@ -93,7 +85,6 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* beneficios */}
             <section className="bg-slate-50 px-6 py-16">
                 <div className="max-w-5xl mx-auto">
                     <h2 className="text-2xl font-bold text-slate-800 text-center mb-10">
@@ -123,16 +114,13 @@ export default function LandingPage() {
                             >
                                 <span className="text-4xl">{icon}</span>
                                 <h3 className="font-semibold text-slate-800">{titulo}</h3>
-                                <p className="text-sm text-slate-500 leading-relaxed">
-                                    {descripcion}
-                                </p>
+                                <p className="text-sm text-slate-500 leading-relaxed">{descripcion}</p>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* cómo funciona */}
             <section className="px-6 py-16">
                 <div className="max-w-3xl mx-auto">
                     <h2 className="text-2xl font-bold text-slate-800 text-center mb-10">
@@ -170,7 +158,6 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* CTA final */}
             <section className="bg-blue-600 px-6 py-16">
                 <div className="max-w-2xl mx-auto text-center space-y-6">
                     <h2 className="text-3xl font-bold text-white">
@@ -199,20 +186,27 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* footer */}
             <footer className="border-t border-slate-100 px-6 py-6">
                 <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <span className="text-sm font-semibold text-slate-700">🛒 Surix App</span>
+                    <button
+                        onClick={() => router.push('/')}
+                        className="text-sm font-semibold text-slate-700"
+                    >
+                        🛒 Surix App
+                    </button>
                     <p className="text-xs text-slate-400">
                         Proyecto académico — Universidad de Nariño · 2026
                     </p>
                     <div className="flex gap-4 text-xs text-slate-400">
-                        <button onClick={() => router.push('/catalogo')}
-                            className="hover:text-slate-600">Catálogo</button>
-                        <button onClick={() => router.push('/login')}
-                            className="hover:text-slate-600">Iniciar sesión</button>
-                        <button onClick={() => router.push('/register')}
-                            className="hover:text-slate-600">Registrarse</button>
+                        <button onClick={() => router.push('/catalogo')} className="hover:text-slate-600">
+                            Catálogo
+                        </button>
+                        <button onClick={() => router.push('/login')} className="hover:text-slate-600">
+                            Iniciar sesión
+                        </button>
+                        <button onClick={() => router.push('/register')} className="hover:text-slate-600">
+                            Registrarse
+                        </button>
                     </div>
                 </div>
             </footer>

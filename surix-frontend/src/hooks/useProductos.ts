@@ -38,16 +38,16 @@ export function useProductos() {
     const listaActiva = listas?.find(l => l.estado === 'EN_PROCESO')
 
     const { data: itemsLista, mutate: mutarItemsLista } = useSWR(
-    listaActiva ? `/api/listas/${listaActiva.id}/items` : null,
-    () => listasApi.getItems(listaActiva!.id),
-    {
-        fallbackData: [],          // ← si no hay lista, items vacíos
-        revalidateOnFocus: true,
-    }
-)
+        listaActiva ? `/api/listas/${listaActiva.id}/items` : null,
+        () => listasApi.getItems(listaActiva!.id),
+        {
+            fallbackData: [],          // ← si no hay lista, items vacíos
+            revalidateOnFocus: true,
+        }
+    )
 
     // expirar items locales después de 24 horas
-    
+
 
     // productos filtrados
     const productosFiltrados = productos?.filter(p => {
@@ -71,33 +71,33 @@ export function useProductos() {
         : itemsLocales.length
 
     const handleAgregar = async (producto: Producto) => {
-    setAgregando(producto.id)
-    try {
-        if (usuario?.roles.includes('CLIENTE')) {
-            let lista = listaActiva
-            if (!lista) {
-                lista = await listasApi.create(usuario.id)
-                await mutarListas()   // ← actualiza listaActiva
+        setAgregando(producto.id)
+        try {
+            if (usuario?.roles.includes('CLIENTE')) {
+                let lista = listaActiva
+                if (!lista) {
+                    lista = await listasApi.create(usuario.id)
+                    await mutarListas()   // ← actualiza listaActiva
+                }
+                await listasApi.addItem(lista.id, producto.id, 1)
+                await mutarItemsLista()   // ← actualiza yaEnLista en cards
+                toast.success(`${producto.nombre} agregado a tu lista`)
+            } else {
+                agregarLocal(producto, 1)
+                toast.success(`${producto.nombre} agregado`, {
+                    description: 'Inicia sesión para guardar tu lista',
+                    action: {
+                        label: 'Iniciar sesión',
+                        onClick: () => router.push('/login?redirect=/lista'),
+                    },
+                })
             }
-            await listasApi.addItem(lista.id, producto.id, 1)
-            await mutarItemsLista()   // ← actualiza yaEnLista en cards
-            toast.success(`${producto.nombre} agregado a tu lista`)
-        } else {
-            agregarLocal(producto, 1)
-            toast.success(`${producto.nombre} agregado`, {
-                description: 'Inicia sesión para guardar tu lista',
-                action: {
-                    label: 'Iniciar sesión',
-                    onClick: () => router.push('/login?redirect=/lista'),
-                },
-            })
+        } catch (err: any) {
+            toast.error(err.message ?? 'Error al agregar el producto')
+        } finally {
+            setAgregando(null)
         }
-    } catch (err: any) {
-        toast.error(err.message ?? 'Error al agregar el producto')
-    } finally {
-        setAgregando(null)
     }
-}
 
     const handleVerLista = () => {
         if (usuario) router.push('/lista')
