@@ -1,7 +1,7 @@
 package com.surixapp.mercado.service.impl;
 
-import com.surixapp.mercado.dto.CreateEstanteRequest;
-import com.surixapp.mercado.dto.EstanteResponse;
+import com.surixapp.mercado.dto.request.CreateEstanteRequest;
+import com.surixapp.mercado.dto.response.EstanteResponse;
 import com.surixapp.mercado.entity.Estante;
 import com.surixapp.mercado.entity.ListaCompra;
 import com.surixapp.mercado.exception.BusinessException;
@@ -64,7 +64,7 @@ public class EstanteServiceImpl implements EstanteService {
     }
 
     @Override
-    public EstanteResponse update(Long id, com.surixapp.mercado.dto.CreateEstanteRequest request) {
+    public EstanteResponse update(Long id, CreateEstanteRequest request) {
         // Validar antes de procesar
         validarCoordenadas(request.getCoordX(), request.getCoordY(), id);
         Estante existing = repository.findById(id)

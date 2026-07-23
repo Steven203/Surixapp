@@ -1,6 +1,8 @@
 package com.surixapp.mercado.service.impl;
 
 import com.surixapp.mercado.dto.*;
+import com.surixapp.mercado.dto.request.CreateProductoRequest;
+import com.surixapp.mercado.dto.response.ProductoResponse;
 import com.surixapp.mercado.entity.*;
 import com.surixapp.mercado.exception.BusinessException;
 import com.surixapp.mercado.exception.ResourceNotFoundException;

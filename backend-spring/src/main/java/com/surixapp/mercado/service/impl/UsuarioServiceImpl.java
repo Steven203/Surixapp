@@ -1,8 +1,8 @@
 package com.surixapp.mercado.service.impl;
 
-import com.surixapp.mercado.dto.CreateUsuarioRequest;
-import com.surixapp.mercado.dto.UpdateUsuarioRequest;
-import com.surixapp.mercado.dto.UsuarioResponse;
+import com.surixapp.mercado.dto.request.CreateUsuarioRequest;
+import com.surixapp.mercado.dto.request.UpdateUsuarioRequest;
+import com.surixapp.mercado.dto.response.UsuarioResponse;
 import com.surixapp.mercado.entity.ListaCompra;
 import com.surixapp.mercado.entity.Role;
 import com.surixapp.mercado.entity.Usuario;

@@ -7,7 +7,7 @@ import ProductoCard from '@/components/productos/ProductoCard'
 import ProductoFiltros from '@/components/productos/ProductoFiltros'
 import { useState, useEffect } from 'react'
 import { usePagination } from '@/hooks/usePagination'
-import Pagination from '@/components/ui/pagination'
+import Pagination from '@/components/common/pagination'
 
 export default function CatalogoPage() {
     const {
@@ -87,7 +87,8 @@ export default function CatalogoPage() {
                     <p className="text-sm text-slate-500">
                         {isLoading
                             ? 'Cargando productos...'
-                            : `${productosFiltrados.length} producto${productosFiltrados.length !== 1 ? 's' : ''}`}
+                            : `${itemsPagina.length} producto${itemsPagina.length !== 1 ? 's' : ''}
+                            ${totalPages > 1 ? ` · página ${page} de ${totalPages}` : ''}`}
                     </p>
 
                     {busqueda && (
@@ -115,7 +116,7 @@ export default function CatalogoPage() {
                     </div>
                 )}
 
-                {!isLoading && productosFiltrados.length === 0 && (
+                {!isLoading && itemsPagina.length === 0 && (
                     <div className="text-center py-16 space-y-3">
                         <div className="text-5xl">🔍</div>
                         <p className="text-slate-500 font-medium">No encontramos productos</p>

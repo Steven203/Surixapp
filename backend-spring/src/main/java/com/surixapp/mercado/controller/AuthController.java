@@ -1,9 +1,9 @@
 package com.surixapp.mercado.controller;
 
-import com.surixapp.mercado.dto.AuthRequest;
-import com.surixapp.mercado.dto.AuthResponse;
-import com.surixapp.mercado.dto.CreateUsuarioRequest;
-import com.surixapp.mercado.dto.UsuarioResponse;
+import com.surixapp.mercado.dto.request.AuthRequest;
+import com.surixapp.mercado.dto.request.CreateUsuarioRequest;
+import com.surixapp.mercado.dto.response.AuthResponse;
+import com.surixapp.mercado.dto.response.UsuarioResponse;
 import com.surixapp.mercado.entity.Role;
 import com.surixapp.mercado.entity.Usuario;
 import com.surixapp.mercado.exception.AuthException;

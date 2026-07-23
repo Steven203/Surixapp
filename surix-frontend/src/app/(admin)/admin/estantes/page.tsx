@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button'
 import EstanteForm from '@/components/estantes/EstanteForm'
 import EditModal from '@/components/admin/EditModal'
 import { Badge } from '@/components/ui/badge'
-import SearchBar from '@/components/ui/searchbar'
-import EmptyState from '@/components/ui/emptystate'
-import Pagination from '@/components/ui/pagination'
+import SearchBar from '@/components/common/searchbar'
+import EmptyState from '@/components/common/emptystate'
+import Pagination from '@/components/common/pagination'
 import { usePagination } from '@/hooks/usePagination'
 const PER_PAGE = 10
 import {

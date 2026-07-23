@@ -5,6 +5,7 @@ import { useListaStore } from '@/store/listaStore'
 import { authApi } from '@/api/auth'
 import { listasApi } from '@/api/listas'
 import { Usuario } from '@/types/usuario'
+import { ROUTES } from '@/constants/routes'
 
 export function useAuth() {
     const router = useRouter()
@@ -56,9 +57,9 @@ export function useAuth() {
 
             if (usuario.roles.includes('CLIENTE')) {
                 await sincronizarItemsLocales(usuario.id)
-                router.push('/lista')
+                router.push(ROUTES.LISTA)
             } else if (usuario.roles.includes('ADMIN')) {
-                router.push('/admin/productos')
+                router.push(ROUTES.ADMIN.PRODUCTOS)
             } else {
                 setError('El usuario no tiene un rol asignado')
             }
@@ -88,7 +89,7 @@ export function useAuth() {
                 await sincronizarItemsLocales(usuario.id)
             }
 
-            router.push('/lista')
+            router.push(ROUTES.LISTA)
         } catch (err: any) {
             setError(err.message ?? 'Error al crear la cuenta')
         } finally {
@@ -98,7 +99,7 @@ export function useAuth() {
 
     const handleLogout = () => {
         logout()
-        router.push('/login')
+        router.push(ROUTES.LOGIN)
     }
 
     return {

@@ -1,6 +1,10 @@
 package com.surixapp.mercado.controller;
 
-import com.surixapp.mercado.dto.*;
+import com.surixapp.mercado.dto.request.CreateItemListaRequest;
+import com.surixapp.mercado.dto.request.CreateListaCompraRequest;
+import com.surixapp.mercado.dto.request.UpdateItemCantidadRequest;
+import com.surixapp.mercado.dto.response.ItemListaResponse;
+import com.surixapp.mercado.dto.response.ListaCompraResponse;
 import com.surixapp.mercado.service.ItemListaService;
 import com.surixapp.mercado.service.ListaCompraService;
 import jakarta.validation.Valid;

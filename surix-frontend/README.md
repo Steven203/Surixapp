@@ -88,7 +88,14 @@ src/
 |   | __ categorias/
 |   |    |__ CategoriaForm.tsx     
 |   |__ usuarios
-|        |__UsuarioForm.tsx  
+|   |     |__UsuarioForm.tsx
+|   |__ common/
+|        |__ confirmdialog
+|        |__ emptystate
+|        |__ loadingskeleton
+|        |__ pagination
+|        |__ searchableselect
+|        |__ searchbar
 |
 ├── api/                              # capa de comunicación con el backend
 │   ├── client.ts                     # fetch base con URL y headers
@@ -120,6 +127,13 @@ src/
 │   ├── estante.ts
 │   ├── categoria.ts
 │   └── lista.ts
+|__ constants/
+|   |__ api.ts
+|   |__ pagination.ts
+|   |__ routes.ts
+|__ lib/
+|   |__ swr.ts
+|   |__ utils.ts
 │
 └── proxy.ts                     # protege rutas según rol
 ```

@@ -1,6 +1,8 @@
 package com.surixapp.mercado.service.impl;
 
-import com.surixapp.mercado.dto.*;
+
+import com.surixapp.mercado.dto.request.CreateRoleRequest;
+import com.surixapp.mercado.dto.response.RoleResponse;
 import com.surixapp.mercado.entity.Role;
 import com.surixapp.mercado.exception.ResourceNotFoundException;
 import com.surixapp.mercado.repository.RoleRepository;

@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { ItemLista as ItemListaType } from '@/types/lista'
 import ItemLista from './ItemLista'
+import {ROUTES} from "@/constants/routes";
 
 type Props = {
     items: ItemListaType[]
@@ -20,7 +21,7 @@ export default function RutaSugerida({
         <div className="space-y-2">
             <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-slate-700">🗺️ Ruta sugerida</h2>
-                <button onClick={() => router.push('/catalogo')}
+                <button onClick={() => router.push(ROUTES.CATALOGO)}
                     className="text-sm text-blue-600 hover:text-blue-800 font-medium">
                     + Agregar del catálogo
                 </button>
@@ -29,7 +30,7 @@ export default function RutaSugerida({
             {items.length === 0 && (
                 <div className="bg-white rounded-xl border border-dashed border-slate-300 p-8 text-center space-y-3">
                     <p className="text-slate-400 text-sm">Tu lista está vacía</p>
-                    <button onClick={() => router.push('/catalogo')}
+                    <button onClick={() => router.push(ROUTES.CATALOGO)}
                         className="text-blue-600 text-sm hover:underline">
                         Ir al catálogo
                     </button>

@@ -1,4 +1,4 @@
-package com.surixapp.mercado.dto;
+package com.surixapp.mercado.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 

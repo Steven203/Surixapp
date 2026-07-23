@@ -8,6 +8,7 @@ import { Producto } from '@/types/producto'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import {ROUTES} from "@/constants/routes";
 
 export function useProductos() {
     const router = useRouter()
@@ -88,7 +89,7 @@ export function useProductos() {
                     description: 'Inicia sesión para guardar tu lista',
                     action: {
                         label: 'Iniciar sesión',
-                        onClick: () => router.push('/login?redirect=/lista'),
+                        onClick: () => router.push(`${ROUTES.LOGIN}?redirect=${ROUTES.LISTA}`),
                     },
                 })
             }
@@ -100,8 +101,8 @@ export function useProductos() {
     }
 
     const handleVerLista = () => {
-        if (usuario) router.push('/lista')
-        else router.push('/login?redirect=/lista')
+        if (usuario) router.push(ROUTES.LISTA)
+        else router.push(`${ROUTES.LOGIN}?redirect=${ROUTES.LISTA}`)
     }
 
     return {

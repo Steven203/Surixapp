@@ -1,6 +1,7 @@
 package com.surixapp.mercado.controller;
 
-import com.surixapp.mercado.dto.*;
+import com.surixapp.mercado.dto.request.CreateCategoriaRequest;
+import com.surixapp.mercado.dto.response.CategoriaResponse;
 import com.surixapp.mercado.service.CategoriaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

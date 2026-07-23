@@ -6,6 +6,7 @@ import { ItemLista } from '@/types/lista'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import EstanteMap from '@/components/estantes/EstanteMap'
+import {ROUTES} from "@/constants/routes";
 
 export default function ListaDetallePage() {
     const { id } = useParams()
@@ -36,7 +37,7 @@ export default function ListaDetallePage() {
         return (
             <div className="text-center py-20 space-y-3">
                 <p className="text-slate-400">Lista no encontrada</p>
-                <Button variant="outline" onClick={() => router.push('/lista')}>
+                <Button variant="outline" onClick={() => router.push(ROUTES.LISTA)}>
                     Volver
                 </Button>
             </div>
@@ -48,7 +49,7 @@ export default function ListaDetallePage() {
             <div className="flex items-center justify-between">
                 <div>
                     <button
-                        onClick={() => router.push('/lista')}
+                        onClick={() => router.push(ROUTES.LISTA)}
                         className="text-sm text-slate-400 hover:text-slate-600 mb-1 flex items-center gap-1"
                     >
                         ← Volver
@@ -139,7 +140,7 @@ export default function ListaDetallePage() {
                 </div>
             </div>
 
-            <Button variant="outline" className="w-full" onClick={() => router.push('/lista')}>
+            <Button variant="outline" className="w-full" onClick={() => router.push(ROUTES.LISTA)}>
                 ← Volver a mis listas
             </Button>
         </div>

@@ -1,15 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
-import { useRouter } from 'next/navigation'
+import { ROUTES } from '@/constants/routes'
 
 const links = [
-    { href: '/admin/productos', label: '📦 Productos' },
-    { href: '/admin/estantes', label: '🗂️ Estantes' },
-    { href: '/admin/categorias', label: '🏷️ Categorías' },
-    { href: '/admin/usuarios', label: '👤 Usuarios' },
+    { href: ROUTES.ADMIN.PRODUCTOS, label: '📦 Productos' },
+    { href: ROUTES.ADMIN.ESTANTES, label: '🗂️ Estantes' },
+    { href: ROUTES.ADMIN.CATEGORIAS, label: '🏷️ Categorías' },
+    { href: ROUTES.ADMIN.USUARIOS, label: '👤 Usuarios' },
 ]
 
 export default function Sidebar({ onClose }: { onClose?: () => void }) {
@@ -20,7 +20,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
 
     const handleLogout = () => {
         logout()
-        router.push('/catalogo')
+        router.push(ROUTES.HOME)
     }
 
     return (
@@ -33,12 +33,8 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
                         ADMIN
                     </span>
                 </div>
-                {/* botón cerrar en móvil */}
                 {onClose && (
-                    <button
-                        onClick={onClose}
-                        className="md:hidden p-1 rounded hover:bg-slate-700"
-                    >
+                    <button onClick={onClose} className="md:hidden p-1 rounded hover:bg-slate-700">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                 d="M6 18L18 6M6 6l12 12" />
@@ -53,11 +49,10 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
                         key={link.href}
                         href={link.href}
                         onClick={onClose}
-                        className={`flex items-center px-4 py-2.5 rounded-lg text-sm transition-colors ${
-                            pathname === link.href
+                        className={`flex items-center px-4 py-2.5 rounded-lg text-sm transition-colors ${pathname === link.href
                                 ? 'bg-slate-700 text-white font-medium'
                                 : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                        }`}
+                            }`}
                     >
                         {link.label}
                     </Link>

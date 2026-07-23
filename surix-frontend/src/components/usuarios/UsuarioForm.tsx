@@ -34,17 +34,17 @@ type UsuarioEditFormData = z.infer<typeof editSchema>
 
 type Props =
   | {
-      modo: 'crear'
-      defaultValues?: Partial<UsuarioCreateFormData>
-      onSubmit: (data: UsuarioCreateFormData) => Promise<boolean>
-      onCancel: () => void
-    }
+    modo: 'crear'
+    defaultValues?: Partial<UsuarioCreateFormData>
+    onSubmit: (data: UsuarioCreateFormData) => Promise<boolean>
+    onCancel: () => void
+  }
   | {
-      modo: 'editar'
-      defaultValues?: Partial<UsuarioEditFormData>
-      onSubmit: (data: UsuarioEditFormData) => Promise<boolean>
-      onCancel: () => void
-    }
+    modo: 'editar'
+    defaultValues?: Partial<UsuarioEditFormData>
+    onSubmit: (data: UsuarioEditFormData) => Promise<boolean>
+    onCancel: () => void
+  }
 
 export default function UsuarioForm({ modo, defaultValues, onSubmit, onCancel }: Props) {
   const schema = modo === 'crear' ? createSchema : editSchema

@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.surixapp.mercado.dto.CreateItemListaRequest;
-import com.surixapp.mercado.dto.ItemListaResponse;
+import com.surixapp.mercado.dto.request.CreateItemListaRequest;
+import com.surixapp.mercado.dto.response.ItemListaResponse;
 import com.surixapp.mercado.entity.ItemLista;
 import com.surixapp.mercado.entity.ListaCompra;
 import com.surixapp.mercado.entity.Producto;

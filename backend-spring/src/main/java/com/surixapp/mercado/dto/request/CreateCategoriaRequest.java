@@ -1,13 +1,14 @@
-package com.surixapp.mercado.dto;
+package com.surixapp.mercado.dto.request;
 
-public class CategoriaResponse {
+import jakarta.validation.constraints.NotBlank;
 
-    private Long id;
+public class CreateCategoriaRequest {
+
+    @NotBlank(message = "nombre is required")
     private String nombre;
+
     private String descripcion;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
     public String getDescripcion() { return descripcion; }

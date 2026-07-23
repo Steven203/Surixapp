@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button'
 import CategoriaForm from '@/components/categorias/CategoriaForm'
 import EditModal from '@/components/admin/EditModal'
 import { usePagination } from '@/hooks/usePagination'
-import SearchBar from '@/components/ui/searchbar'
-import Pagination from '@/components/ui/pagination'
-import EmptyState from '@/components/ui/emptystate'
+import SearchBar from '@/components/common/searchbar'
+import Pagination from '@/components/common/pagination'
+import EmptyState from '@/components/common/emptystate'
 import {
     Dialog, DialogContent, DialogHeader,
     DialogTitle, DialogTrigger,

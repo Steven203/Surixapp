@@ -1,6 +1,7 @@
 package com.surixapp.mercado.service.impl;
 
-import com.surixapp.mercado.dto.*;
+import com.surixapp.mercado.dto.request.CreateCategoriaRequest;
+import com.surixapp.mercado.dto.response.CategoriaResponse;
 import com.surixapp.mercado.entity.Categoria;
 import com.surixapp.mercado.entity.ListaCompra;
 import com.surixapp.mercado.exception.BusinessException;
@@ -46,7 +47,7 @@ public class CategoriaServiceImpl implements CategoriaService {
     }
 
     @Override
-    public CategoriaResponse update(Long id, com.surixapp.mercado.dto.CreateCategoriaRequest request) {
+    public CategoriaResponse update(Long id, CreateCategoriaRequest request) {
         Categoria existing = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoria " + id + " not found"));
 

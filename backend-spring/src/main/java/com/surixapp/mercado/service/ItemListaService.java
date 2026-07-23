@@ -1,7 +1,7 @@
 package com.surixapp.mercado.service;
 
-import com.surixapp.mercado.dto.CreateItemListaRequest;
-import com.surixapp.mercado.dto.ItemListaResponse;
+import com.surixapp.mercado.dto.request.*;
+import com.surixapp.mercado.dto.response.ItemListaResponse;
 
 import java.util.List;
 

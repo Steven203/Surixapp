@@ -1,5 +1,5 @@
 // dto/ItemListaResponse.java
-package com.surixapp.mercado.dto;
+package com.surixapp.mercado.dto.response;
 
 public class ItemListaResponse {
     private Long id;

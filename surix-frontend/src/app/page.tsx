@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/authStore'
 import { Button } from '@/components/ui/button'
 import Navbar from '@/components/layout/Navbar'
+import { ROUTES } from '@/constants/routes'
 
 export default function LandingPage() {
     const router = useRouter()
@@ -11,11 +12,11 @@ export default function LandingPage() {
 
     const handleCTA = () => {
         if (!usuario) {
-            router.push('/catalogo')
+            router.push(ROUTES.CATALOGO)
             return
         }
-        if (usuario.roles.includes('ADMIN')) router.push('/admin/productos')
-        else router.push('/lista')
+        if (usuario.roles.includes('ADMIN')) router.push(ROUTES.ADMIN.PRODUCTOS)
+        else router.push(ROUTES.LISTA)
     }
 
     return (
@@ -30,12 +31,12 @@ export default function LandingPage() {
                     !usuario ? (
                         <>
                             <button
-                                onClick={() => router.push('/login')}
+                                onClick={() => router.push(ROUTES.LOGIN)}
                                 className="text-sm text-slate-600 hover:text-slate-800"
                             >
                                 Iniciar sesión
                             </button>
-                            <Button size="sm" onClick={() => router.push('/register')}>
+                            <Button size="sm" onClick={() => router.push(ROUTES.REGISTER)}>
                                 Crear cuenta
                             </Button>
                         </>
@@ -73,7 +74,7 @@ export default function LandingPage() {
                             size="lg"
                             variant="outline"
                             className="text-base px-8"
-                            onClick={() => router.push('/catalogo')}
+                            onClick={() => router.push(ROUTES.CATALOGO)}
                         >
                             Ver catálogo
                         </Button>
@@ -170,7 +171,7 @@ export default function LandingPage() {
                         <Button
                             size="lg"
                             className="bg-white text-blue-600 hover:bg-blue-50 text-base px-8"
-                            onClick={() => router.push('/register')}
+                            onClick={() => router.push(ROUTES.REGISTER)}
                         >
                             Crear cuenta gratis
                         </Button>
@@ -178,7 +179,7 @@ export default function LandingPage() {
                             size="lg"
                             variant="outline"
                             className="border-white text-black hover:bg-blue-400 text-base px-8"
-                            onClick={() => router.push('/catalogo')}
+                            onClick={() => router.push(ROUTES.CATALOGO)}
                         >
                             Ver catálogo sin registro
                         </Button>
@@ -189,7 +190,7 @@ export default function LandingPage() {
             <footer className="border-t border-slate-100 px-6 py-6">
                 <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
                     <button
-                        onClick={() => router.push('/')}
+                        onClick={() => router.push(ROUTES.HOME)}
                         className="text-sm font-semibold text-slate-700"
                     >
                         🛒 Surix App
@@ -198,13 +199,13 @@ export default function LandingPage() {
                         Proyecto académico — Universidad de Nariño · 2026
                     </p>
                     <div className="flex gap-4 text-xs text-slate-400">
-                        <button onClick={() => router.push('/catalogo')} className="hover:text-slate-600">
+                        <button onClick={() => router.push(ROUTES.CATALOGO)} className="hover:text-slate-600">
                             Catálogo
                         </button>
-                        <button onClick={() => router.push('/login')} className="hover:text-slate-600">
+                        <button onClick={() => router.push(ROUTES.LOGIN)} className="hover:text-slate-600">
                             Iniciar sesión
                         </button>
-                        <button onClick={() => router.push('/register')} className="hover:text-slate-600">
+                        <button onClick={() => router.push(ROUTES.REGISTER)} className="hover:text-slate-600">
                             Registrarse
                         </button>
                     </div>

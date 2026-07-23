@@ -5,10 +5,10 @@ import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import useSWR from 'swr'
 import { listasApi } from '@/api/listas'
-import { toast } from 'sonner'
 import { useLista } from '@/hooks/useLista'
 import Navbar from '@/components/layout/Navbar'
-import ConfirmDialog from '@/components/ui/confirmdialog'
+import ConfirmDialog from '@/components/common/confirmdialog'
+import {ROUTES} from "@/constants/routes";
 
 
 export default function ClienteLayout({ children }: { children: React.ReactNode }) {
@@ -29,7 +29,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
 
     const finalizarLogout = () => {
         logout()
-        router.push('/login')
+        router.push(ROUTES.LOGIN)
     }
 
     const handleLogout = () => {
@@ -63,7 +63,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                     <>
                         {!estaEnLista && (
                             <button
-                                onClick={() => router.push('/lista')}
+                                onClick={() => router.push(ROUTES.LISTA)}
                                 className="text-sm text-slate-600 hover:text-slate-800 flex items-center gap-1 whitespace-nowrap"
                             >
                                 🛒
@@ -76,14 +76,14 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                         )}
 
                         <button
-                            onClick={() => router.push('/catalogo')}
+                            onClick={() => router.push(ROUTES.CATALOGO)}
                             className="text-sm text-slate-500 hover:text-slate-800 transition-colors whitespace-nowrap"
                         >
                             Catálogo
                         </button>
 
                         <button
-                            onClick={() => router.push('/perfil')}
+                            onClick={() => router.push(ROUTES.PERFIL)}
                             className="text-sm text-slate-500 hover:text-slate-800 whitespace-nowrap"
                         >
                             Perfil
@@ -97,7 +97,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
                         </button>
                     </>
                 }
-                logoHref="/"
+                logoHref={ROUTES.HOME}
             />
 
             <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">

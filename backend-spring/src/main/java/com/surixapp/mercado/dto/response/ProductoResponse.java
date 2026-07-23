@@ -1,4 +1,4 @@
-package com.surixapp.mercado.dto;
+package com.surixapp.mercado.dto.response;
 
 public class ProductoResponse {
     private Long id;

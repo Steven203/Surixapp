@@ -1,7 +1,8 @@
 // controller/EstanteController.java
 package com.surixapp.mercado.controller;
 
-import com.surixapp.mercado.dto.*;
+import com.surixapp.mercado.dto.request.CreateEstanteRequest;
+import com.surixapp.mercado.dto.response.EstanteResponse;
 import com.surixapp.mercado.service.EstanteService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

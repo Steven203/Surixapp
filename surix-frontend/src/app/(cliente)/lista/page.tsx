@@ -11,7 +11,11 @@ import { Button } from '@/components/ui/button'
 import RutaSugerida from '@/components/lista/RutaSugerida'
 import ListaActions from '@/components/lista/ListaActions'
 import EstanteMap from '@/components/estantes/EstanteMap'
-import ConfirmDialog from '@/components/ui/confirmdialog'
+import ConfirmDialog from '@/components/common/confirmdialog'
+import { usePagination } from '@/hooks/usePagination'
+import Pagination from '@/components/common/pagination'
+import { ROUTES } from '@/constants/routes'
+const HISTORIAL_PER_PAGE = 5
 
 export default function ListaPage() {
     const router = useRouter()
@@ -45,6 +49,10 @@ export default function ListaPage() {
     } = useLista()
 
     const { estantes } = useEstantes()
+
+    const { page: pageHistorial, setPage: setPageHistorial,
+        totalPages: totalPagesHistorial, itemsPagina: historialPagina
+    } = usePagination(listasFinalizadas, HISTORIAL_PER_PAGE)
 
     useEffect(() => {
         if (!listaActiva || sincronizando) return
@@ -103,7 +111,7 @@ export default function ListaPage() {
                             <h2 className="font-semibold text-slate-700">
                                 Historial de compras
                             </h2>
-                            {listasFinalizadas.map((lista: ListaCompra) => (
+                            {historialPagina.map((lista: ListaCompra) => (
                                 <button
                                     key={lista.id}
                                     onClick={() => router.push(`/lista/${lista.id}`)}
@@ -123,6 +131,11 @@ export default function ListaPage() {
                                     </div>
                                 </button>
                             ))}
+                            <Pagination
+                                page={pageHistorial}
+                                totalPages={totalPagesHistorial}
+                                onPageChange={setPageHistorial}
+                            />
                         </div>
                     )}
                 </div>

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {ROUTES} from "@/constants/routes";
 
 export default function LoginPage() {
     const router = useRouter()
@@ -62,7 +63,7 @@ export default function LoginPage() {
                             ¿No tienes cuenta?{' '}
                             <button
                                 type="button"
-                                onClick={() => router.push('/register')}
+                                onClick={() => router.push(ROUTES.REGISTER)}
                                 className="text-blue-600 hover:underline font-medium"
                             >
                                 Regístrate

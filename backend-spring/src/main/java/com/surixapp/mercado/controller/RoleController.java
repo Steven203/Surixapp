@@ -1,6 +1,7 @@
 package com.surixapp.mercado.controller;
 
-import com.surixapp.mercado.dto.*;
+import com.surixapp.mercado.dto.request.CreateRoleRequest;
+import com.surixapp.mercado.dto.response.RoleResponse;
 import com.surixapp.mercado.service.RoleService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

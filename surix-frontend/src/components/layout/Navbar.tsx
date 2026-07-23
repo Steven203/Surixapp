@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import {ROUTES} from "@/constants/routes";
 
 type NavbarProps = {
     leftContent?: React.ReactNode
@@ -15,8 +16,7 @@ export default function Navbar({
     leftContent,
     centerContent,
     rightContent,
-    className,
-    logoHref = '/',
+    className
 }: NavbarProps) {
     const router = useRouter()
 
@@ -24,7 +24,7 @@ export default function Navbar({
         <header className={cn('bg-white border-b border-slate-200 sticky top-0 z-10', className)}>
             <div className="max-w-5xl mx-auto px-4 py-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <button
-                    onClick={() => router.push(logoHref)}
+                    onClick={() => router.push(ROUTES.HOME)}
                     className="flex items-center gap-3 flex-shrink-0 min-w-0 text-left"
                 >
                     {leftContent}

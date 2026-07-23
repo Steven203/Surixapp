@@ -1,7 +1,9 @@
 // controller/UsuarioController.java
 package com.surixapp.mercado.controller;
 
-import com.surixapp.mercado.dto.*;
+import com.surixapp.mercado.dto.request.CreateUsuarioRequest;
+import com.surixapp.mercado.dto.request.UpdateUsuarioRequest;
+import com.surixapp.mercado.dto.response.UsuarioResponse;
 import com.surixapp.mercado.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

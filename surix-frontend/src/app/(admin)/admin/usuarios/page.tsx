@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import UsuarioForm from '@/components/usuarios/UsuarioForm'
 import { usePagination } from '@/hooks/usePagination'
-import SearchBar from '@/components/ui/searchbar'
-import Pagination from '@/components/ui/pagination'
-import EmptyState from '@/components/ui/emptystate'
+import SearchBar from '@/components/common/searchbar'
+import Pagination from '@/components/common/pagination'
+import EmptyState from '@/components/common/emptystate'
 const PER_PAGE = 10
 import {
   Dialog,
@@ -44,13 +44,6 @@ export default function UsuariosPage() {
   const handleCrear = async (data: UsuarioCreateData) => {
     const ok = await crear(data)
     if (ok) setOpenCrear(false)
-    return ok
-  }
-
-  const handleActualizar = async (data: UsuarioUpdateData) => {
-    if (!editando) return false
-    const ok = await actualizar(editando.id, data)
-    if (ok) setEditando(null)
     return ok
   }
 
