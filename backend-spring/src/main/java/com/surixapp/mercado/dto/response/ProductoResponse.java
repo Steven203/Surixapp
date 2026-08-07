@@ -1,15 +1,27 @@
 package com.surixapp.mercado.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 public class ProductoResponse {
+    @Schema(description = "ID del producto", example = "1")
     private Long id;
+    @Schema(description = "Nombre del producto", example = "Producto 1")
     private String nombre;
+    @Schema(description = "Precio del producto", example = "19.99")
     private Double precio;
+    @Schema(description = "Descripción del producto", example = "Descripción")
     private String descripcion;
+    @Schema(description = "Stock del producto", example = "10")
     private Integer stock;
+    @Schema(description = "ID del estante", example = "1")
     private Long estanteId;
+    @Schema(description = "Nombre del estante", example = "Estante 1")
     private String estanteNombre;
+    @Schema(description = "Orden lógico del producto", example = "1")
     private Integer ordenLogico;
+    @Schema(description = "ID de la categoría", example = "1")
     private Long categoriaId;
+    @Schema(description = "Nombre de la categoría", example = "Categoría 1")
     private String categoriaNombre;
 
     public Long getId() {

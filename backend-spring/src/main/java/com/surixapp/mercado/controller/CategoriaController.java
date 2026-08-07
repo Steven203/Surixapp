@@ -8,6 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Categorías", description = "Gestión de categorías de productos")
 @RestController
 @RequestMapping("/api/categorias")
 public class CategoriaController {
@@ -18,24 +22,36 @@ public class CategoriaController {
         this.service = service;
     }
 
+    @Operation(summary = "Crear categoría", description = "Requiere rol ADMIN")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoriaResponse create(@Valid @RequestBody CreateCategoriaRequest request) {
         return service.create(request);
     }
 
+    @Operation(summary = "Listar categorías")
     @GetMapping
-    public List<CategoriaResponse> list() { return service.list(); }
+    public List<CategoriaResponse> list() {
+        return service.list();
+    }
 
+    @Operation(summary = "Obtener categoría por ID")
     @GetMapping("/{id}")
-    public CategoriaResponse getById(@PathVariable Long id) { return service.getById(id); }
+    public CategoriaResponse getById(@PathVariable Long id) {
+        return service.getById(id);
+    }
 
+    @Operation(summary = "Actualizar categoría", description = "Requiere rol ADMIN")
     @PutMapping("/{id}")
-    public CategoriaResponse update(@PathVariable Long id, @Valid @RequestBody CreateCategoriaRequest request) {
+    public CategoriaResponse update(@PathVariable Long id,
+            @Valid @RequestBody CreateCategoriaRequest request) {
         return service.update(id, request);
     }
 
+    @Operation(summary = "Eliminar categoría", description = "Requiere rol ADMIN")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) { service.delete(id); }
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
+    }
 }
