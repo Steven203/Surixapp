@@ -5,8 +5,6 @@ import com.surixapp.mercado.dto.request.CreateUsuarioRequest;
 import com.surixapp.mercado.dto.request.UpdateUsuarioRequest;
 import com.surixapp.mercado.dto.response.UsuarioResponse;
 
-import jakarta.validation.Valid;
-
 import java.util.List;
 
 public interface UsuarioService {

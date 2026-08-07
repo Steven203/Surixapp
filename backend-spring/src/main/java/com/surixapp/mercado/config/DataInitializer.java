@@ -5,12 +5,14 @@ import com.surixapp.mercado.entity.Usuario;
 import com.surixapp.mercado.repository.RoleRepository;
 import com.surixapp.mercado.repository.UsuarioRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
 @Component
+@Profile("!test")
 public class DataInitializer implements CommandLineRunner {
 
     private final RoleRepository roleRepository;
