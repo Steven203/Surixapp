@@ -8,54 +8,61 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-const createSchema = z.object({
-  username: z.string()
-    .min(3, 'Mínimo 3 caracteres')
-    .max(100, 'Máximo 100 caracteres')
-    .regex(/^[a-zA-Z0-9_]+$/, 'Solo letras, números y guión bajo'),
-  password: z.string()
-    .min(4, 'Mínimo 4 caracteres')
-    .max(50, 'Máximo 50 caracteres'),
-})
+type UsuarioFormData = {
+  username: string
+  password?: string
+}
 
-const editSchema = z.object({
+const baseSchema = z.object({
   username: z.string()
     .min(3, 'Mínimo 3 caracteres')
     .max(100, 'Máximo 100 caracteres')
     .regex(/^[a-zA-Z0-9_]+$/, 'Solo letras, números y guión bajo'),
   password: z.string()
     .max(50, 'Máximo 50 caracteres')
-    .optional()
-    .transform(v => (v === '' ? undefined : v)),
+    .optional(),
 })
-
-type UsuarioCreateFormData = z.infer<typeof createSchema>
-type UsuarioEditFormData = z.infer<typeof editSchema>
 
 type Props =
   | {
     modo: 'crear'
-    defaultValues?: Partial<UsuarioCreateFormData>
-    onSubmit: (data: UsuarioCreateFormData) => Promise<boolean>
+    defaultValues?: Partial<UsuarioFormData>
+    onSubmit: (data: UsuarioCreateSubmit) => Promise<boolean>
     onCancel: () => void
   }
   | {
     modo: 'editar'
-    defaultValues?: Partial<UsuarioEditFormData>
-    onSubmit: (data: UsuarioEditFormData) => Promise<boolean>
+    defaultValues?: Partial<UsuarioFormData>
+    onSubmit: (data: UsuarioFormData) => Promise<boolean>
     onCancel: () => void
   }
 
+type UsuarioCreateSubmit = {
+  username: string
+  password: string
+}
+
 export default function UsuarioForm({ modo, defaultValues, onSubmit, onCancel }: Props) {
-  const schema = modo === 'crear' ? createSchema : editSchema
+  const schema = baseSchema.superRefine((data, ctx) => {
+    // En modo crear la contraseña es obligatoria
+    if (modo === 'crear' && (!data.password || data.password.length < 4)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['password'],
+        message: 'Mínimo 4 caracteres',
+      })
+    }
+  })
+
+  const resolver = zodResolver(schema) as never
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<UsuarioCreateFormData | UsuarioEditFormData>({
-    resolver: zodResolver(schema),
+  } = useForm<UsuarioFormData>({
+    resolver,
     defaultValues: {
       username: '',
       password: '',
@@ -71,9 +78,14 @@ export default function UsuarioForm({ modo, defaultValues, onSubmit, onCancel }:
     } as any)
   }, [defaultValues, reset])
 
-  const handleFormSubmit = async (data: UsuarioCreateFormData | UsuarioEditFormData) => {
-    const ok = await onSubmit(data as any)
-    if (ok) reset({ username: '', password: '' } as any)
+  const handleFormSubmit = async (data: UsuarioFormData) => {
+    if (modo === 'crear') {
+      const ok = await onSubmit(data as UsuarioCreateSubmit)
+      if (ok) reset({ username: '', password: '' } as any)
+    } else {
+      const ok = await onSubmit(data)
+      if (ok) reset({ username: '', password: '' } as any)
+    }
   }
 
   return (

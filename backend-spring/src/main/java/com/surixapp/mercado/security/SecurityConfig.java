@@ -105,8 +105,8 @@ public class SecurityConfig {
                                 "/api-docs/**",
                                 "/error")
                         .permitAll()
-                        // auth
-                        .requestMatchers("/api/auth/**").permitAll()
+// auth
+                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                         // GET públicos
                         .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()

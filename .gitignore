@@ -66,6 +66,7 @@ lerna-debug.log*
 .env.*
 !.env.example
 !.env.template
+postgres_data/
 
 # Next.js / Vercel
 .vercel/

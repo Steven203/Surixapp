@@ -21,4 +21,11 @@ export const authApi = {
       body: JSON.stringify({ username, password }),
     })
   },
+
+  cambiarContraseña: async (passwordActual: string, nuevaContraseña: string) => {
+    return apiFetch<void>('/api/auth/cambiar-password', {
+      method: 'PATCH',
+      body: JSON.stringify({ passwordActual, nuevaContraseña }),
+    })
+  },
 }

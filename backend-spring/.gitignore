@@ -24,6 +24,7 @@ replay_pid*
 .project
 .settings/
 .vscode/
+.git/
 
 # OS
 .DS_Store

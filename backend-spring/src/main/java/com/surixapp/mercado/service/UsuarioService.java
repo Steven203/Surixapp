@@ -1,4 +1,3 @@
-// service/UsuarioService.java
 package com.surixapp.mercado.service;
 
 import com.surixapp.mercado.dto.request.CreateUsuarioRequest;
@@ -20,6 +19,8 @@ public interface UsuarioService {
 
     UsuarioResponse update(Long id, UpdateUsuarioRequest request);
 
+    void cambiarPassword(Long usuarioId, String passwordActual, String nuevaContraseña);
+
     void delete(Long id);
-    
+
 }

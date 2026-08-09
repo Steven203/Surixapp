@@ -119,6 +119,19 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario " + id + " not found")));
     }
 
+    @Override
+    public void cambiarPassword(Long usuarioId, String passwordActual, String nuevaContraseña) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario " + usuarioId + " not found"));
+
+        if (!passwordEncoder.matches(passwordActual, usuario.getPassword())) {
+            throw new BusinessException("La contraseña actual es incorrecta");
+        }
+
+        usuario.setPassword(passwordEncoder.encode(nuevaContraseña));
+        usuarioRepository.save(usuario);
+    }
+
     private UsuarioResponse toResponse(Usuario u) {
         UsuarioResponse r = new UsuarioResponse();
         r.setId(u.getId());

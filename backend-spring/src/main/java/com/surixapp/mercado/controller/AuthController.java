@@ -1,6 +1,7 @@
 package com.surixapp.mercado.controller;
 
 import com.surixapp.mercado.dto.request.AuthRequest;
+import com.surixapp.mercado.dto.request.CambiarPasswordRequest;
 import com.surixapp.mercado.dto.request.CreateUsuarioRequest;
 import com.surixapp.mercado.dto.response.AuthResponse;
 import com.surixapp.mercado.dto.response.UsuarioResponse;
@@ -17,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -99,5 +101,20 @@ public class AuthController {
                                 .toList();
 
                 return new AuthResponse(token, usuario.getId(), usuario.getUsername(), roles);
+        }
+
+        @Operation(summary = "Cambiar contraseña", description = "Permite al usuario autenticado cambiar su propia contraseña")
+        @ApiResponses({
+                        @ApiResponse(responseCode = "200", description = "Contraseña actualizada"),
+                        @ApiResponse(responseCode = "400", description = "Contraseña actual incorrecta")
+        })
+        @PatchMapping("/cambiar-password")
+        public void cambiarPassword(@Valid @RequestBody CambiarPasswordRequest request) {
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                Usuario usuario = (Usuario) auth.getPrincipal();
+                usuarioService.cambiarPassword(
+                                usuario.getId(),
+                                request.getPasswordActual(),
+                                request.getNuevaContraseña());
         }
 }

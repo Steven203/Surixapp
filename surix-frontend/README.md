@@ -164,7 +164,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8080
 
 ---
 
-## Cómo correr el proyecto
+## Cómo correr el proyecto sin docker
 
 ```bash
 # instalar dependencias
@@ -186,3 +186,21 @@ pnpm start
 pnpm lint
 
 La app corre en `http://localhost:3000`
+
+
+## correr con docker
+
+# en la raíz del repo
+docker-compose up --build
+
+# en background
+docker-compose up --build -d
+
+# ver logs
+docker-compose logs -f backend
+
+# detener todo
+docker-compose down
+
+# detener y borrar volúmenes (resetear BD)
+docker-compose down -v
