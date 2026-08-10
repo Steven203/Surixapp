@@ -1,0 +1,62 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend-spring/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend-spring/**'
+
+jobs:
+  test:
+    name: Tests Spring Boot
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: mercado_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: test123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Correr tests
+        working-directory: ./backend-spring
+        run: mvn test -B
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/mercado_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: test123
+          JWT_SECRET: dGVzdHNlY3JldGtleWZvcnRlc3RpbmdwdXJwb3Nlc29ubHkxMjM0NTY3ODk=
+          JWT_EXPIRATION: 86400000
+          SPRING_PROFILES_ACTIVE: test
+
+      - name: Publicar reporte de tests
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Tests Backend
+          path: backend-spring/target/surefire-reports/*.xml
+          reporter: java-junit
