@@ -18,3 +18,9 @@ export type UsuarioUpdateData = {
   username: string
   password?: string
 }
+
+
+export type UsuarioFormData = {
+  username: string
+  password?: string
+}

@@ -47,7 +47,7 @@ export default function EstanteForm({
 
   useEffect(() => {
     if (defaultValues) reset (defaultValues)
-  }, [defaultValues])
+  }, [defaultValues, reset])
 
   const handleFormSubmit = async (data: OutputValues) => {
     const ok = await onSubmit(data)

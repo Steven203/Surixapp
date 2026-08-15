@@ -5,7 +5,7 @@ import { listasApi } from '@/api/listas'
 import { useAuthStore } from '@/store/authStore'
 import { useListaStore } from '@/store/listaStore'
 import { Producto } from '@/types/producto'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import {ROUTES} from "@/constants/routes";
@@ -13,7 +13,7 @@ import {ROUTES} from "@/constants/routes";
 export function useProductos() {
     const router = useRouter()
     const usuario = useAuthStore(s => s.usuario)
-    const { itemsLocales, agregarLocal, limpiarLocales } = useListaStore()
+    const { itemsLocales, agregarLocal} = useListaStore()
 
     const [busqueda, setBusqueda] = useState('')
     const [categoriaFiltro, setCategoriaFiltro] = useState<number | null>(null)
@@ -93,8 +93,9 @@ export function useProductos() {
                     },
                 })
             }
-        } catch (err: any) {
-            toast.error(err.message ?? 'Error al agregar el producto')
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Error al agregar el producto'
+            toast.error(message)
         } finally {
             setAgregando(null)
         }

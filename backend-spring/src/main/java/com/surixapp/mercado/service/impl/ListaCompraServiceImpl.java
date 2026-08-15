@@ -1,11 +1,11 @@
 package com.surixapp.mercado.service.impl;
 
 import com.surixapp.mercado.dto.request.CreateListaCompraRequest;
-import com.surixapp.mercado.dto.response.ItemListaResponse;
 import com.surixapp.mercado.dto.response.ListaCompraResponse;
 import com.surixapp.mercado.entity.*;
 import com.surixapp.mercado.exception.BusinessException;
 import com.surixapp.mercado.exception.ResourceNotFoundException;
+import com.surixapp.mercado.mapper.ItemListaMapper;
 import com.surixapp.mercado.repository.*;
 import com.surixapp.mercado.service.ListaCompraService;
 import org.springframework.stereotype.Service;
@@ -18,11 +18,17 @@ public class ListaCompraServiceImpl implements ListaCompraService {
 
     private final ListaCompraRepository listaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ProductoRepository productoRepository;
+    private final ItemListaMapper mapper; // ← inyectar mapper
 
     public ListaCompraServiceImpl(ListaCompraRepository listaRepository,
-            UsuarioRepository usuarioRepository) {
+            UsuarioRepository usuarioRepository,
+            ProductoRepository productoRepository,
+            ItemListaMapper mapper) {
         this.listaRepository = listaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.productoRepository = productoRepository;
+        this.mapper = mapper;
     }
 
     @Override
@@ -59,7 +65,7 @@ public class ListaCompraServiceImpl implements ListaCompraService {
     @Override
     public ListaCompraResponse finalizar(Long id, boolean forzar) {
         ListaCompra lista = listaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Lista " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Lista not found"));
 
         if (lista.getEstado() == ListaCompra.Estado.FINALIZADA)
             throw new BusinessException("La lista ya está finalizada");
@@ -80,20 +86,51 @@ public class ListaCompraServiceImpl implements ListaCompraService {
             lista.getItems().removeIf(item -> !item.getRecogido());
         }
 
-        // guardar snapshot de cada item antes de finalizar
+        // validar stock y descontar solo al finalizar
+        List<String> sinStock = new java.util.ArrayList<>();
+
         for (ItemLista item : lista.getItems()) {
-            if (item.getProducto() != null) {
-                Producto p = item.getProducto();
-                item.setSnapshotNombre(p.getNombre());
-                item.setSnapshotPrecio(p.getPrecio());
-                item.setSnapshotDescripcion(p.getDescripcion());
-                if (p.getEstante() != null) {
-                    item.setSnapshotEstanteNombre(p.getEstante().getNombre());
-                    item.setSnapshotEstanteOrden(p.getEstante().getOrdenLogico());
-                }
-                if (p.getCategoria() != null) {
-                    item.setSnapshotCategoriaNombre(p.getCategoria().getNombre());
-                }
+            if (item.getProducto() == null)
+                continue;
+
+            Producto producto = item.getProducto();
+            int stockActual = producto.getStock();
+
+            if (item.getCantidad() > stockActual) {
+                sinStock.add(
+                        producto.getNombre() +
+                                " (pediste " + item.getCantidad() +
+                                ", disponible " + stockActual + ")");
+            }
+        }
+
+        if (!sinStock.isEmpty()) {
+            throw new BusinessException(
+                    "Stock insuficiente para finalizar. Ajusta las cantidades de: " +
+                            String.join(", ", sinStock));
+        }
+
+        // descontar stock y guardar snapshot
+        for (ItemLista item : lista.getItems()) {
+            if (item.getProducto() == null)
+                continue;
+
+            Producto producto = item.getProducto();
+
+            // descontar stock
+            producto.setStock(producto.getStock() - item.getCantidad());
+            productoRepository.save(producto);
+
+            // guardar snapshot
+            item.setSnapshotNombre(producto.getNombre());
+            item.setSnapshotPrecio(producto.getPrecio());
+            item.setSnapshotDescripcion(producto.getDescripcion());
+            if (producto.getEstante() != null) {
+                item.setSnapshotEstanteNombre(producto.getEstante().getNombre());
+                item.setSnapshotEstanteOrden(producto.getEstante().getOrdenLogico());
+            }
+            if (producto.getCategoria() != null) {
+                item.setSnapshotCategoriaNombre(producto.getCategoria().getNombre());
             }
         }
 
@@ -115,37 +152,14 @@ public class ListaCompraServiceImpl implements ListaCompraService {
         r.setId(lista.getId());
         r.setUsuarioId(lista.getUsuario().getId());
         r.setEstado(lista.getEstado().name());
-        r.setItems(lista.getItems().stream().map(this::itemToResponse).toList());
-        return r;
-    }
 
-    private ItemListaResponse itemToResponse(ItemLista item) {
-        ItemListaResponse r = new ItemListaResponse();
-        r.setId(item.getId());
-        r.setCantidad(item.getCantidad());
-        r.setRecogido(item.getRecogido());
-
-        // usar snapshot si el producto fue borrado
-        boolean tieneProducto = item.getProducto() != null;
-        boolean tieneSnapshot = item.getSnapshotNombre() != null;
-
-        if (tieneProducto) {
-            // lista en proceso — datos en vivo del producto
-            r.setProductoId(item.getProducto().getId());
-            r.setProductoNombre(item.getProducto().getNombre());
-            r.setProductoPrecio(item.getProducto().getPrecio());
-            if (item.getProducto().getEstante() != null) {
-                r.setEstanteNombre(item.getProducto().getEstante().getNombre());
-                r.setOrdenLogico(item.getProducto().getEstante().getOrdenLogico());
-            }
-        } else if (tieneSnapshot) {
-            // lista finalizada — datos del snapshot
-            r.setProductoId(null);
-            r.setProductoNombre(item.getSnapshotNombre());
-            r.setProductoPrecio(item.getSnapshotPrecio());
-            r.setEstanteNombre(item.getSnapshotEstanteNombre());
-            r.setOrdenLogico(item.getSnapshotEstanteOrden());
-        }
+        // usa el mapper según el estado de la lista
+        boolean finalizada = lista.getEstado() == ListaCompra.Estado.FINALIZADA;
+        r.setItems(lista.getItems().stream()
+                .map(item -> finalizada
+                        ? mapper.toHistoricalResponse(item)
+                        : mapper.toActiveResponse(item))
+                .toList());
 
         return r;
     }

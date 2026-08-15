@@ -25,14 +25,22 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 class ItemListaServiceTest {
 
-    @Autowired private ItemListaService itemService;
-    @Autowired private ListaCompraService listaService;
-    @Autowired private ProductoService productoService;
-    @Autowired private UsuarioRepository usuarioRepository;
-    @Autowired private RoleRepository roleRepository;
-    @Autowired private EstanteRepository estanteRepository;
-    @Autowired private CategoriaRepository categoriaRepository;
-    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired
+    private ItemListaService itemService;
+    @Autowired
+    private ListaCompraService listaService;
+    @Autowired
+    private ProductoService productoService;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+    @Autowired
+    private RoleRepository roleRepository;
+    @Autowired
+    private EstanteRepository estanteRepository;
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private ListaCompraResponse lista;
     private ProductoResponse producto;
@@ -108,16 +116,17 @@ class ItemListaServiceTest {
     }
 
     @Test
-    @DisplayName("Marcar recogido — debe descontar stock y marcar como recogido")
-    void marcarRecogido_shouldDecrementStockAndMarkAsRecogido() {
+    @DisplayName("Marcar recogido — debe marcar como recogido sin modificar stock")
+    void marcarRecogido_shouldMarkAsRecogidoWithoutChangingStock() {
         ItemListaResponse item = itemService.addItem(lista.getId(), buildItemRequest(5));
-        int stockInicial = producto.getStock();
+        int stockAntes = productoService.getById(producto.getId()).getStock();
 
         ItemListaResponse recogido = itemService.marcarRecogido(item.getId());
 
         assertTrue(recogido.getRecogido());
-        ProductoResponse productoActualizado = productoService.getById(producto.getId());
-        assertEquals(stockInicial - 5, productoActualizado.getStock());
+        // el stock NO debe cambiar al marcar recogido
+        int stockDespues = productoService.getById(producto.getId()).getStock();
+        assertEquals(stockAntes, stockDespues);
     }
 
     @Test
@@ -131,13 +140,12 @@ class ItemListaServiceTest {
     }
 
     @Test
-    @DisplayName("Actualizar cantidad — debe modificar la cantidad del item")
-    void updateCantidad_shouldUpdateItemCantidad() {
+    @DisplayName("Actualizar cantidad — bajar de 2 a 1 no debe dar error de stock")
+    void updateCantidad_shouldAllowDecreaseWithoutStockError() {
         ItemListaResponse item = itemService.addItem(lista.getId(), buildItemRequest(2));
 
-        ItemListaResponse updated = itemService.updateCantidad(item.getId(), 8);
-
-        assertEquals(8, updated.getCantidad());
+        // bajar cantidad no debe lanzar error
+        assertDoesNotThrow(() -> itemService.updateCantidad(item.getId(), 1));
     }
 
     @Test
@@ -148,5 +156,28 @@ class ItemListaServiceTest {
         itemService.removeItem(item.getId());
 
         assertTrue(itemService.listActiveView(lista.getId()).isEmpty());
+    }
+
+    @Test
+    @DisplayName("Actualizar cantidad — subir más allá del stock debe fallar")
+    void updateCantidad_shouldFailWhenExceedingStock() {
+        ItemListaResponse item = itemService.addItem(lista.getId(), buildItemRequest(1));
+
+        // producto tiene 100 de stock, pedir 9999 debe fallar
+        assertThrows(BusinessException.class,
+                () -> itemService.updateCantidad(item.getId(), 9999));
+    }
+
+    @Test
+    @DisplayName("Finalizar lista — debe descontar stock de productos recogidos")
+    void finalizar_shouldDecrementStockOnFinalize() {
+        ItemListaResponse item = itemService.addItem(lista.getId(), buildItemRequest(5));
+        itemService.marcarRecogido(item.getId());
+        int stockAntes = productoService.getById(producto.getId()).getStock();
+
+        listaService.finalizar(lista.getId(), false);
+
+        int stockDespues = productoService.getById(producto.getId()).getStock();
+        assertEquals(stockAntes - 5, stockDespues);
     }
 }

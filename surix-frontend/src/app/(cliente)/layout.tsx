@@ -3,8 +3,6 @@
 import { useAuthStore } from '@/store/authStore'
 import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import useSWR from 'swr'
-import { listasApi } from '@/api/listas'
 import { useLista } from '@/hooks/useLista'
 import Navbar from '@/components/layout/Navbar'
 import ConfirmDialog from '@/components/common/confirmdialog'
@@ -18,11 +16,6 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
     const pathname = usePathname()
     const { items, eliminarLista, listaActiva } = useLista()
     const [confirmLogout, setConfirmLogout] = useState(false)
-
-    const { data: listas } = useSWR(
-        usuario ? `/api/listas/usuario/${usuario.id}` : null,
-        () => listasApi.getByUsuario(usuario!.id)
-    )
 
     const tieneItems = (items?.length ?? 0) > 0
     const estaEnLista = pathname === '/lista'

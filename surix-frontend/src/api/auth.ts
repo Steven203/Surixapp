@@ -1,6 +1,6 @@
 import { apiFetch } from './client'
 
-type AuthResponse = {
+export type AuthResponse = {
   token: string
   id: number
   username: string

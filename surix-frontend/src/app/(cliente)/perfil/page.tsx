@@ -43,8 +43,9 @@ export default function PerfilPage() {
             await authApi.cambiarContraseña(data.passwordActual, data.nuevaContraseña)
             toast.success('Contraseña actualizada correctamente')
             reset({ passwordActual: '', nuevaContraseña: '' })
-        } catch (err: any) {
-            toast.error(err.message ?? 'Error al cambiar la contraseña')
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Error al actualizar'
+            toast.error(message)
         }
     }
 

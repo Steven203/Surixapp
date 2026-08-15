@@ -137,7 +137,7 @@ export default function EstanteMap({
                         })}
 
                         {/* puntos en cada estante de la ruta */}
-                        {estantesEnRuta.map((estante, i) => {
+                        {estantesEnRuta.map((estante) => {
                             const centro = getCentro(estante)
                             const completado = estantesCompletados.has(estante.nombre)
                             return (

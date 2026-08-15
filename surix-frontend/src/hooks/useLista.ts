@@ -78,8 +78,9 @@ export function useLista() {
             await listasApi.create(usuario.id)
             mutarListas()
             toast.success('Lista creada — agrega productos desde el catálogo')
-        } catch (err: any) {
-            toast.error(err.message)
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Error al crear la lista'
+            toast.error(message)
         }
     }
 
@@ -89,8 +90,9 @@ export function useLista() {
             await listasApi.marcarRecogido(item.id)
             mutarItems()
             toast.success(`✓ ${item.productoNombre} recogido`)
-        } catch (err: any) {
-            toast.error(err.message)
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Error al marcar como recogido'
+            toast.error(message)
         }
     }
 
@@ -99,8 +101,9 @@ export function useLista() {
             await listasApi.desmarcarRecogido(item.id)
             mutarItems()
             toast.success(`↩ ${item.productoNombre} devuelto al estante`)
-        } catch (err: any) {
-            toast.error(err.message)
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Error al desmarcar como recogido'
+            toast.error(message)
         }
     }
 
@@ -114,8 +117,9 @@ export function useLista() {
                         await listasApi.removeItem(item.id)
                         mutarItems()
                         toast.success('Producto eliminado')
-                    } catch (err: any) {
-                        toast.error(err.message)
+                    } catch (err) {
+                        const message = err instanceof Error ? err.message : 'Error al eliminar el producto'
+                        toast.error(message)
                     }
                 },
             },
@@ -133,8 +137,9 @@ export function useLista() {
             mutarItems()
             toast.success('Cantidad actualizada')
             return true
-        } catch (err: any) {
-            toast.error(err.message)
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Error al actualizar la cantidad'
+            toast.error(message)
             return false
         }
     }
@@ -148,8 +153,9 @@ export function useLista() {
             await mutateGlobal(`/api/listas/${listaActiva.id}/items`, [])
             if (usuario)
                 await mutateGlobal(`/api/listas/usuario/${usuario.id}`)
-        } catch (err: any) {
-            toast.error(err.message)
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Error al eliminar la lista'
+            toast.error(message)
         }
     }
 
@@ -216,8 +222,9 @@ export function useLista() {
             await mutateGlobal(`/api/listas/${listaActiva.id}/items`, [])
             if (usuario) await mutateGlobal(`/api/listas/usuario/${usuario.id}`)
             toast.success('¡Compra finalizada!')
-        } catch (err: any) {
-            toast.error(err.message)
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Error al finalizar la compra'
+            toast.error(message)
         }
     }
     const sincronizarItemsLocales = async () => {

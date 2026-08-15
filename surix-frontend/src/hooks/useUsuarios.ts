@@ -25,8 +25,9 @@ export function useUsuarios() {
       await mutate()
       toast.success(`Rol ${rolNombre} asignado`)
       return true
-    } catch (err: any) {
-      toast.error(err.message ?? 'Error al asignar rol')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al asignar rol'
+      toast.error(message)
       return false
     }
   }
@@ -37,8 +38,9 @@ export function useUsuarios() {
       await mutate()
       toast.success('Usuario actualizado')
       return true
-    } catch (err: any) {
-      toast.error(err.message ?? 'Error al actualizar')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al actualizar'
+      toast.error(message)
       return false
     }
   }
@@ -48,8 +50,9 @@ export function useUsuarios() {
       await usuariosApi.removeRole(usuarioId, roleId)
       mutate()
       toast.success(`Rol ${rolNombre} removido`)
-    } catch (err: any) {
-      toast.error(err.message ?? 'Error al remover rol')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al remover rol'
+      toast.error(message)
     }
   }
 

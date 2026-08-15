@@ -36,7 +36,7 @@ export default function CategoriaForm({ defaultValues, onSubmit, onCancel }: Pro
 
     useEffect(() => {
         if (defaultValues) reset(defaultValues)
-    }, [defaultValues])
+    }, [defaultValues, reset])
 
     const handleFormSubmit = async (data: FormData) => {
         const ok = await onSubmit(data)

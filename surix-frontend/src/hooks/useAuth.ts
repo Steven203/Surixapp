@@ -20,7 +20,7 @@ export function useAuth() {
 
         try {
             const listas = await listasApi.getByUsuario(usuarioId)
-            let listaActiva = listas.find((l: any) => l.estado === 'EN_PROCESO')
+            let listaActiva = listas.find((l) => l.estado === 'EN_PROCESO')
 
             if (!listaActiva) {
                 listaActiva = await listasApi.create(usuarioId)
@@ -63,11 +63,14 @@ export function useAuth() {
             } else {
                 setError('El usuario no tiene un rol asignado')
             }
-        } catch (err: any) {
-            setError(err.message ?? 'Error al iniciar sesión')
-        } finally {
-            setLoading(false)
-        }
+        } catch (err) {
+    const message = err instanceof Error
+        ? err.message
+        : 'Error al iniciar sesión'
+    setError(message)
+} finally {
+    setLoading(false)
+}
     }
 
     const register = async (username: string, password: string) => {
@@ -90,11 +93,14 @@ export function useAuth() {
             }
 
             router.push(ROUTES.LISTA)
-        } catch (err: any) {
-            setError(err.message ?? 'Error al crear la cuenta')
-        } finally {
-            setLoading(false)
-        }
+        } catch (err) {
+    const message = err instanceof Error
+        ? err.message
+        : 'Error al iniciar sesión'
+    setError(message)
+} finally {
+    setLoading(false)
+}
     }
 
     const handleLogout = () => {

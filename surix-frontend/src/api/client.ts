@@ -2,6 +2,13 @@ import { useAuthStore } from '@/store/authStore'
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
+type ApiError = {
+    code: string
+    message: string
+    path?: string
+    timestamp?: string
+}
+
 export async function apiFetch<T>(
     path: string,
     options?: RequestInit
@@ -23,7 +30,7 @@ export async function apiFetch<T>(
     })
 
     const contentType = res.headers.get('content-type') || ''
-    let data: any = null
+    let data: unknown = null  // ← unknown en lugar de any
 
     if (contentType.includes('application/json')) {
         try {
@@ -40,12 +47,14 @@ export async function apiFetch<T>(
     }
 
     if (!res.ok) {
-        const message =
-            typeof data === 'object' && data?.message
-                ? data.message
-                : typeof data === 'string' && data.trim()
-                    ? data
-                    : `Error ${res.status}: ${res.statusText}`
+        // extraer mensaje según el tipo de data
+        let message = `Error ${res.status}: ${res.statusText}`
+
+        if (isApiError(data)) {
+            message = data.message
+        } else if (typeof data === 'string' && data.trim()) {
+            message = data
+        }
 
         if (res.status === 401) {
             useAuthStore.getState().logout()
@@ -60,4 +69,14 @@ export async function apiFetch<T>(
 
     if (res.status === 204) return null as T
     return data as T
+}
+
+// type guard — verifica en tiempo de ejecución que data es ApiError
+function isApiError(data: unknown): data is ApiError {
+    return (
+        typeof data === 'object' &&
+        data !== null &&
+        'message' in data &&
+        typeof (data as ApiError).message === 'string'
+    )
 }

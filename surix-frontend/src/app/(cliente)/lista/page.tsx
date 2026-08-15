@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLista } from '@/hooks/useLista'
 import { useEstantes } from '@/hooks/useEstantes'
@@ -14,14 +14,13 @@ import EstanteMap from '@/components/estantes/EstanteMap'
 import ConfirmDialog from '@/components/common/confirmdialog'
 import { usePagination } from '@/hooks/usePagination'
 import Pagination from '@/components/common/pagination'
-import { ROUTES } from '@/constants/routes'
 const HISTORIAL_PER_PAGE = 5
 
 export default function ListaPage() {
     const router = useRouter()
     const { itemsLocales } = useListaStore()
     const [finalizando, setFinalizando] = useState(false)
-    const [sincronizando, setSincronizando] = useState(false)
+    const sincronizandoRef = useRef(false)
 
     const {
         listaActiva,
@@ -38,12 +37,10 @@ export default function ListaPage() {
         estantesCompletados,
         confirmConfig,
         cerrarConfirm,
-        crearLista,
         marcarRecogido,
         desmarcarRecogido,
         eliminarItem,
         actualizarCantidad,
-        eliminarLista,
         finalizar,
         sincronizarItemsLocales,
     } = useLista()
@@ -55,10 +52,14 @@ export default function ListaPage() {
     } = usePagination(listasFinalizadas, HISTORIAL_PER_PAGE)
 
     useEffect(() => {
-        if (!listaActiva || sincronizando) return
+        if (!listaActiva || sincronizandoRef.current) return
         if (itemsLocales.length === 0) return
-        setSincronizando(true)
-        sincronizarItemsLocales().finally(() => setSincronizando(false))
+
+        sincronizandoRef.current = true
+        sincronizarItemsLocales().finally(() => {
+            sincronizandoRef.current = false
+        })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [listaActiva?.id, itemsLocales.length])
 
     const handleFinalizar = async () => {
@@ -155,12 +156,6 @@ export default function ListaPage() {
                         </div>
                         <Badge>En proceso</Badge>
                     </div>
-
-                    {sincronizando && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-700 text-center">
-                            Sincronizando productos del catálogo...
-                        </div>
-                    )}
 
                     {/* acciones — progreso y finalizar */}
                     <ListaActions

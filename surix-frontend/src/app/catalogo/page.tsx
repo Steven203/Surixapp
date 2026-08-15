@@ -39,7 +39,7 @@ export default function CatalogoPage() {
     )
 
     // reinicia a página 1 cuando cambian filtros
-    useEffect(() => { setPage(1) }, [busqueda, categoriaFiltro])
+    useEffect(() => { setPage(1) }, [busqueda, categoriaFiltro, setPage])
 
     return (
         <div className="min-h-screen bg-slate-50">

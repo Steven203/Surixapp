@@ -1,7 +1,7 @@
 import useSWR from 'swr'
 import { toast } from 'sonner'
 import { estantesApi } from '@/api/estantes'
-import { Estante, EstanteFormData, EstanteUpdateData } from '@/types/estante'
+import {EstanteFormData, EstanteUpdateData } from '@/types/estante'
 
 export function useEstantes() {
     const { data: estantes, mutate, isLoading } = useSWR(
@@ -20,7 +20,8 @@ export function useEstantes() {
             toast.success('Estante creado exitosamente')
             return true
         } catch (err: unknown) {
-            toast.error(err instanceof Error ? err.message : 'Error al crear el estante')
+            const message = err instanceof Error ? err.message : 'Error al crear el estante'
+            toast.error(message)
             return false
         }
     }
@@ -50,8 +51,9 @@ export function useEstantes() {
         await mutate()
         toast.success('Estante actualizado')
         return true
-    } catch (err: any) {
-        toast.error(err.message ?? 'Error al actualizar')
+    } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error al actualizar'
+        toast.error(message)
         return false
     }
 }

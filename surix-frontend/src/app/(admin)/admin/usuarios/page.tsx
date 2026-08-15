@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useUsuarios } from '@/hooks/useUsuarios'
-import { Usuario, UsuarioCreateData, UsuarioUpdateData } from '@/types/usuario'
+import { Usuario, UsuarioCreateData} from '@/types/usuario'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import UsuarioForm from '@/components/usuarios/UsuarioForm'
@@ -28,9 +28,8 @@ import {
 } from '@/components/ui/table'
 
 export default function UsuariosPage() {
-  const { usuarios, isLoading, crear, actualizar, asignarRol, removerRol, eliminar } = useUsuarios()
+  const { usuarios, isLoading, crear, asignarRol, removerRol, eliminar } = useUsuarios()
   const [openCrear, setOpenCrear] = useState(false)
-  const [editando, setEditando] = useState<Usuario | null>(null)
   const [busqueda, setBusqueda] = useState('')
 
   const usuariosFiltrados = usuarios?.filter(u =>
