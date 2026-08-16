@@ -172,9 +172,13 @@ class ItemListaServiceTest {
     @DisplayName("Finalizar lista — debe descontar stock de productos recogidos")
     void finalizar_shouldDecrementStockOnFinalize() {
         ItemListaResponse item = itemService.addItem(lista.getId(), buildItemRequest(5));
+
+        // marcar como recogido ANTES de finalizar
         itemService.marcarRecogido(item.getId());
+
         int stockAntes = productoService.getById(producto.getId()).getStock();
 
+        // finalizar sin forzar — todos los items están recogidos
         listaService.finalizar(lista.getId(), false);
 
         int stockDespues = productoService.getById(producto.getId()).getStock();
