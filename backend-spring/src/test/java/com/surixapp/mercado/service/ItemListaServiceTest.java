@@ -184,11 +184,11 @@ class ItemListaServiceTest {
 
         listaService.finalizar(lista.getId(), false);
 
-        // limpiar caché JPA para leer el valor real de la BD
         entityManager.flush();
         entityManager.clear();
 
         int stockDespues = productoService.getById(producto.getId()).getStock();
+
         assertEquals(stockAntes - 5, stockDespues);
     }
 }

@@ -59,6 +59,7 @@ public class ItemListaServiceImpl implements ItemListaService {
         item.setProducto(producto);
         item.setCantidad(request.getCantidad());
         item.setRecogido(false);
+        lista.getItems().add(item);
         // snapshot NO se guarda aquí — se guarda al finalizar
 
         return mapper.toActiveResponse(itemRepository.save(item)); // ← activeResponse
@@ -129,6 +130,9 @@ public class ItemListaServiceImpl implements ItemListaService {
         if (item.getLista().getEstado() == ListaCompra.Estado.FINALIZADA)
             throw new BusinessException("No se puede eliminar items de una lista finalizada");
 
+        if (item.getLista() != null && item.getLista().getItems() != null) {
+            item.getLista().getItems().remove(item);
+        }
         itemRepository.deleteById(itemId);
     }
 
